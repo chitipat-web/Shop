@@ -26,7 +26,11 @@ export type Settlement = {
 };
 
 function createDb(): Database.Database {
-  const dir = path.join(process.cwd(), "data");
+  // Vercel's filesystem is read-only except /tmp, so demo deployments keep
+  // the DB there (data resets when the serverless instance recycles).
+  const dir = process.env.VERCEL
+    ? "/tmp/shop-data"
+    : path.join(process.cwd(), "data");
   fs.mkdirSync(dir, { recursive: true });
   const db = new Database(path.join(dir, "shop.db"));
   db.pragma("journal_mode = WAL");
