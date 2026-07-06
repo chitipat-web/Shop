@@ -8,6 +8,9 @@ const PERSON_BY_EMAIL: Record<string, number> = {
   "lenghlx1@gmail.com": 2,
 };
 
+/** Admins can settle up, manage stores, edit both names, delete anything. */
+const ADMIN_EMAILS = new Set(["chitipat.kao@gmail.com"]);
+
 /** Seeded placeholder names — only these get replaced by the Google name. */
 const DEFAULT_NAMES = ["คนที่ 1", "คนที่ 2"];
 
@@ -25,7 +28,7 @@ async function syncNameFromGoogle(personId: number, googleName?: string | null) 
   }
 }
 
-export type CurrentUser = { personId: number; email: string };
+export type CurrentUser = { personId: number; email: string; isAdmin: boolean };
 
 /**
  * Resolve the signed-in user to person 1 or 2.
@@ -34,7 +37,9 @@ export type CurrentUser = { personId: number; email: string };
  */
 export async function requireUser(): Promise<CurrentUser> {
   if (process.env.AUTH_DISABLED === "1") {
-    return { personId: 1, email: "dev@localhost" };
+    // AUTH_DEV_PERSON=2 lets local tests exercise the non-admin role.
+    const personId = Number(process.env.AUTH_DEV_PERSON ?? 1);
+    return { personId, email: "dev@localhost", isAdmin: personId === 1 };
   }
   const { data: session } = await auth.getSession();
   const email = session?.user?.email?.toLowerCase();
@@ -42,5 +47,5 @@ export async function requireUser(): Promise<CurrentUser> {
   const personId = PERSON_BY_EMAIL[email];
   if (!personId) redirect("/auth/denied");
   await syncNameFromGoogle(personId, session?.user?.name);
-  return { personId, email };
+  return { personId, email, isAdmin: ADMIN_EMAILS.has(email) };
 }

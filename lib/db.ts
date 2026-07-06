@@ -47,7 +47,8 @@ export interface Db {
     amountSatang: number,
     note: string | null
   ): Promise<void>;
-  deleteUnsettledPurchase(id: number): Promise<void>;
+  /** Delete an unsettled purchase; when restrictToPayerId is set, only rows paid by that person. */
+  deleteUnsettledPurchase(id: number, restrictToPayerId?: number): Promise<void>;
   /** Settle every unsettled purchase; no-op when there are none. */
   settleAll(label: string, settledAt: string): Promise<void>;
   updatePersonName(id: number, name: string): Promise<void>;

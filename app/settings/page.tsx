@@ -32,19 +32,26 @@ export default async function SettingsPage({
       )}
 
       <section className="mb-5 rounded-2xl bg-white p-4 shadow-sm">
-        <h2 className="mb-3 font-semibold">👥 ชื่อสมาชิก 2 คน</h2>
+        <h2 className="mb-3 font-semibold">
+          {user.isAdmin ? "👥 ชื่อสมาชิก 2 คน" : "👤 ชื่อของคุณ"}
+        </h2>
         <form action={updatePersonNames} className="flex flex-col gap-3">
-          {persons.map((person) => (
-            <label key={person.id} className="text-xs font-medium text-neutral-400">
-              {person.id === user.personId ? "คุณ" : "อีกคน"}
-              <input
-                name={`person_${person.id}`}
-                defaultValue={person.name}
-                required
-                className={`mt-1 text-base font-normal text-neutral-800 ${inputCls}`}
-              />
-            </label>
-          ))}
+          {persons
+            .filter((person) => user.isAdmin || person.id === user.personId)
+            .map((person) => (
+              <label
+                key={person.id}
+                className="text-xs font-medium text-neutral-400"
+              >
+                {person.id === user.personId ? "คุณ" : "อีกคน"}
+                <input
+                  name={`person_${person.id}`}
+                  defaultValue={person.name}
+                  required
+                  className={`mt-1 text-base font-normal text-neutral-800 ${inputCls}`}
+                />
+              </label>
+            ))}
           <button
             type="submit"
             className="rounded-xl bg-gradient-to-r from-teal-500 to-emerald-600 py-2.5 font-semibold text-white shadow-md shadow-teal-600/20 transition active:scale-[0.98]"
@@ -54,6 +61,8 @@ export default async function SettingsPage({
         </form>
       </section>
 
+      {user.isAdmin && (
+      <>
       <section className="mb-5 rounded-2xl bg-white p-4 shadow-sm">
         <h2 className="mb-3 font-semibold">🏪 ร้านค้า</h2>
         <div className="flex flex-col gap-4">
@@ -90,7 +99,7 @@ export default async function SettingsPage({
         </div>
       </section>
 
-      <section className="mb-5 rounded-2xl bg-white p-4 shadow-sm">
+      <section className="rounded-2xl bg-white p-4 shadow-sm">
         <h2 className="mb-3 font-semibold">➕ เพิ่มร้านใหม่</h2>
         <form action={addStore} className="flex items-center gap-2">
           <input
@@ -111,11 +120,18 @@ export default async function SettingsPage({
           </button>
         </form>
       </section>
+      </>
+      )}
 
-      <section className="rounded-2xl bg-white p-4 shadow-sm">
+      <section className="mt-5 rounded-2xl bg-white p-4 shadow-sm">
         <h2 className="mb-1 font-semibold">🔐 บัญชีผู้ใช้</h2>
         <p className="mb-3 text-sm text-neutral-500">
           เข้าสู่ระบบด้วย {user.email}
+          {user.isAdmin && (
+            <span className="ml-1.5 rounded-md bg-teal-50 px-1.5 py-0.5 text-xs font-semibold text-teal-700">
+              แอดมิน
+            </span>
+          )}
         </p>
         <form action={signOut}>
           <button

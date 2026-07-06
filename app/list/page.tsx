@@ -16,7 +16,7 @@ export default async function ListPage({
   searchParams: Promise<{ added?: string }>;
 }) {
   const { added } = await searchParams;
-  await requireUser();
+  const user = await requireUser();
   const db = await getDb();
   const [purchases, summary, persons] = await Promise.all([
     db.getUnsettledPurchases(),
@@ -108,16 +108,18 @@ export default async function ListPage({
                   <span className="text-lg font-bold tracking-tight">
                     ฿{satangToBahtText(item.amount_satang)}
                   </span>
-                  <form action={deletePurchase}>
-                    <input type="hidden" name="id" value={item.id} />
-                    <button
-                      type="submit"
-                      aria-label="ลบรายการ"
-                      className="rounded-lg px-2 py-1 text-neutral-300 transition active:bg-red-50 active:text-red-600"
-                    >
-                      ✕
-                    </button>
-                  </form>
+                  {(user.isAdmin || item.payer_id === user.personId) && (
+                    <form action={deletePurchase}>
+                      <input type="hidden" name="id" value={item.id} />
+                      <button
+                        type="submit"
+                        aria-label="ลบรายการ"
+                        className="rounded-lg px-2 py-1 text-neutral-300 transition active:bg-red-50 active:text-red-600"
+                      >
+                        ✕
+                      </button>
+                    </form>
+                  )}
                 </li>
               ))}
             </ul>

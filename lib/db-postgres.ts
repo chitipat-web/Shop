@@ -95,8 +95,12 @@ export async function createPostgresDb(): Promise<Db> {
         INSERT INTO purchases (date, store_id, payer_id, amount_satang, note)
         VALUES (${date}, ${storeId}, ${payerId}, ${amountSatang}, ${note})`;
     },
-    async deleteUnsettledPurchase(id) {
-      await sql`DELETE FROM purchases WHERE id = ${id} AND settlement_id IS NULL`;
+    async deleteUnsettledPurchase(id, restrictToPayerId) {
+      if (restrictToPayerId !== undefined) {
+        await sql`DELETE FROM purchases WHERE id = ${id} AND settlement_id IS NULL AND payer_id = ${restrictToPayerId}`;
+      } else {
+        await sql`DELETE FROM purchases WHERE id = ${id} AND settlement_id IS NULL`;
+      }
     },
     async settleAll(label, settledAt) {
       const summary = await db.getUnsettledSummary();

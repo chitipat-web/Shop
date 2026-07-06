@@ -114,10 +114,16 @@ export function createSqliteDb(): Db {
          VALUES (?, ?, ?, ?, ?)`
       ).run(date, storeId, payerId, amountSatang, note);
     },
-    async deleteUnsettledPurchase(id) {
-      db.prepare(
-        "DELETE FROM purchases WHERE id = ? AND settlement_id IS NULL"
-      ).run(id);
+    async deleteUnsettledPurchase(id, restrictToPayerId) {
+      if (restrictToPayerId !== undefined) {
+        db.prepare(
+          "DELETE FROM purchases WHERE id = ? AND settlement_id IS NULL AND payer_id = ?"
+        ).run(id, restrictToPayerId);
+      } else {
+        db.prepare(
+          "DELETE FROM purchases WHERE id = ? AND settlement_id IS NULL"
+        ).run(id);
+      }
     },
     async settleAll(label, settledAt) {
       const summary = await api.getUnsettledSummary();

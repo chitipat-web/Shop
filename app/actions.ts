@@ -33,16 +33,17 @@ export async function addPurchase(formData: FormData) {
 }
 
 export async function deletePurchase(formData: FormData) {
-  await requireUser();
+  const user = await requireUser();
   const id = Number(formData.get("id"));
   const db = await getDb();
-  // Never touch already-settled records.
-  await db.deleteUnsettledPurchase(id);
+  // Never touch already-settled records; non-admins may only delete their own.
+  await db.deleteUnsettledPurchase(id, user.isAdmin ? undefined : user.personId);
   revalidateAll();
 }
 
 export async function settleUp() {
-  await requireUser();
+  const user = await requireUser();
+  if (!user.isAdmin) redirect("/settle");
   const db = await getDb();
   await db.settleAll(todayBangkok().slice(0, 7), new Date().toISOString());
   revalidateAll();
@@ -50,9 +51,10 @@ export async function settleUp() {
 }
 
 export async function updatePersonNames(formData: FormData) {
-  await requireUser();
+  const user = await requireUser();
+  const editableIds = user.isAdmin ? [1, 2] : [user.personId];
   const db = await getDb();
-  for (const id of [1, 2]) {
+  for (const id of editableIds) {
     const name = String(formData.get(`person_${id}`) ?? "").trim();
     if (name) {
       await db.updatePersonName(id, name);
@@ -63,7 +65,8 @@ export async function updatePersonNames(formData: FormData) {
 }
 
 export async function updateStore(formData: FormData) {
-  await requireUser();
+  const user = await requireUser();
+  if (!user.isAdmin) redirect("/settings");
   const id = Number(formData.get("id"));
   const name = String(formData.get("name") ?? "").trim();
   const hasReceipt = formData.get("has_receipt") === "on" ? 1 : 0;
@@ -76,7 +79,8 @@ export async function updateStore(formData: FormData) {
 }
 
 export async function addStore(formData: FormData) {
-  await requireUser();
+  const user = await requireUser();
+  if (!user.isAdmin) redirect("/settings");
   const name = String(formData.get("name") ?? "").trim();
   const hasReceipt = formData.get("has_receipt") === "on" ? 1 : 0;
   if (name) {

@@ -11,7 +11,7 @@ export default async function SettlePage({
   searchParams: Promise<{ done?: string }>;
 }) {
   const { done } = await searchParams;
-  await requireUser();
+  const user = await requireUser();
   const db = await getDb();
   const [summary, settlements, persons] = await Promise.all([
     db.getUnsettledSummary(),
@@ -87,17 +87,25 @@ export default async function SettlePage({
               </tbody>
             </table>
 
-            <form action={settleUp} className="mt-4">
-              <button
-                type="submit"
-                className="w-full rounded-2xl bg-gradient-to-r from-teal-500 to-emerald-600 py-3.5 text-base font-bold text-white shadow-lg shadow-teal-600/30 transition active:scale-[0.98]"
-              >
-                เคลียร์แล้ว ✓ (ล็อกรายการชุดนี้)
-              </button>
-            </form>
-            <p className="mt-2.5 text-center text-xs text-neutral-400">
-              รายการที่จดเพิ่มหลังจากนี้จะไปเข้ารอบถัดไป
-            </p>
+            {user.isAdmin ? (
+              <>
+                <form action={settleUp} className="mt-4">
+                  <button
+                    type="submit"
+                    className="w-full rounded-2xl bg-gradient-to-r from-teal-500 to-emerald-600 py-3.5 text-base font-bold text-white shadow-lg shadow-teal-600/30 transition active:scale-[0.98]"
+                  >
+                    เคลียร์แล้ว ✓ (ล็อกรายการชุดนี้)
+                  </button>
+                </form>
+                <p className="mt-2.5 text-center text-xs text-neutral-400">
+                  รายการที่จดเพิ่มหลังจากนี้จะไปเข้ารอบถัดไป
+                </p>
+              </>
+            ) : (
+              <p className="mt-4 rounded-xl bg-neutral-50 px-3 py-3 text-center text-sm text-neutral-500">
+                🔒 การกดเคลียร์ยอดทำได้โดยแอดมินเท่านั้น
+              </p>
+            )}
           </div>
         </div>
       )}
