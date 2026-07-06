@@ -47,9 +47,18 @@ export function createSqliteDb(): Db {
       payer_id INTEGER NOT NULL REFERENCES persons(id),
       amount_satang INTEGER NOT NULL,
       note TEXT,
+      receipt_url TEXT,
       settlement_id INTEGER REFERENCES settlements(id)
     );
   `);
+
+  // Migration for databases created before slip attachments existed.
+  const purchaseCols = db.prepare("PRAGMA table_info(purchases)").all() as {
+    name: string;
+  }[];
+  if (!purchaseCols.some((c) => c.name === "receipt_url")) {
+    db.exec("ALTER TABLE purchases ADD COLUMN receipt_url TEXT");
+  }
 
   const personCount = db
     .prepare("SELECT COUNT(*) AS c FROM persons")
@@ -108,11 +117,11 @@ export function createSqliteDb(): Db {
         .prepare("SELECT * FROM settlements ORDER BY id DESC")
         .all() as Settlement[];
     },
-    async insertPurchase(date, storeId, payerId, amountSatang, note) {
+    async insertPurchase(date, storeId, payerId, amountSatang, note, receiptUrl) {
       db.prepare(
-        `INSERT INTO purchases (date, store_id, payer_id, amount_satang, note)
-         VALUES (?, ?, ?, ?, ?)`
-      ).run(date, storeId, payerId, amountSatang, note);
+        `INSERT INTO purchases (date, store_id, payer_id, amount_satang, note, receipt_url)
+         VALUES (?, ?, ?, ?, ?, ?)`
+      ).run(date, storeId, payerId, amountSatang, note, receiptUrl);
     },
     async deleteUnsettledPurchase(id, restrictToPayerId) {
       if (restrictToPayerId !== undefined) {

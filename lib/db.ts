@@ -7,6 +7,7 @@ export type Purchase = {
   payer_id: number;
   amount_satang: number;
   note: string | null;
+  receipt_url: string | null;
   settlement_id: number | null;
 };
 export type Settlement = {
@@ -45,7 +46,8 @@ export interface Db {
     storeId: number,
     payerId: number,
     amountSatang: number,
-    note: string | null
+    note: string | null,
+    receiptUrl: string | null
   ): Promise<void>;
   /** Delete an unsettled purchase; when restrictToPayerId is set, only rows paid by that person. */
   deleteUnsettledPurchase(id: number, restrictToPayerId?: number): Promise<void>;

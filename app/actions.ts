@@ -2,9 +2,31 @@
 
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
+import { put } from "@vercel/blob";
 import { getDb } from "@/lib/db";
 import { requireUser } from "@/lib/auth/access";
 import { parseBahtToSatang, todayBangkok } from "@/lib/format";
+
+const MAX_RECEIPT_BYTES = 5 * 1024 * 1024;
+
+async function uploadReceipt(file: unknown): Promise<string | null> {
+  if (
+    !(file instanceof File) ||
+    file.size === 0 ||
+    file.size > MAX_RECEIPT_BYTES ||
+    !file.type.startsWith("image/") ||
+    !process.env.BLOB_READ_WRITE_TOKEN
+  ) {
+    return null;
+  }
+  const ext = file.type === "image/png" ? "png" : "jpg";
+  const blob = await put(`slips/slip.${ext}`, file, {
+    access: "public",
+    addRandomSuffix: true,
+    contentType: file.type,
+  });
+  return blob.url;
+}
 
 function revalidateAll() {
   revalidatePath("/");
@@ -25,8 +47,17 @@ export async function addPurchase(formData: FormData) {
     redirect("/?error=invalid");
   }
 
+  const receiptUrl = await uploadReceipt(formData.get("receipt"));
+
   const db = await getDb();
-  await db.insertPurchase(date, storeId, payerId, amount, note || null);
+  await db.insertPurchase(
+    date,
+    storeId,
+    payerId,
+    amount,
+    note || null,
+    receiptUrl
+  );
 
   revalidateAll();
   // Stay on quick-add so back-to-back entries are fast.

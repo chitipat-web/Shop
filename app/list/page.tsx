@@ -93,13 +93,30 @@ export default async function ListPage({
                   key={item.id}
                   className="flex items-center gap-3 rounded-2xl bg-white p-3.5 shadow-sm ring-1 ring-black/5"
                 >
-                  <span className="grid h-10 w-10 shrink-0 place-items-center rounded-xl bg-neutral-100 text-neutral-500">
-                    {item.store_has_receipt ? (
-                      <ReceiptIcon className="h-5 w-5" />
-                    ) : (
-                      <PencilIcon className="h-5 w-5" />
-                    )}
-                  </span>
+                  {item.receipt_url ? (
+                    <a
+                      href={item.receipt_url}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      aria-label="ดูสลิป"
+                      className="shrink-0"
+                    >
+                      {/* eslint-disable-next-line @next/next/no-img-element */}
+                      <img
+                        src={item.receipt_url}
+                        alt="สลิป"
+                        className="h-10 w-10 rounded-xl object-cover ring-1 ring-black/10"
+                      />
+                    </a>
+                  ) : (
+                    <span className="grid h-10 w-10 shrink-0 place-items-center rounded-xl bg-neutral-100 text-neutral-500">
+                      {item.store_has_receipt ? (
+                        <ReceiptIcon className="h-5 w-5" />
+                      ) : (
+                        <PencilIcon className="h-5 w-5" />
+                      )}
+                    </span>
+                  )}
                   <div className="min-w-0 flex-1">
                     <p className="truncate font-semibold leading-tight">
                       {item.store_name}

@@ -42,8 +42,11 @@ export async function createPostgresDb(): Promise<Db> {
       payer_id INTEGER NOT NULL REFERENCES persons(id),
       amount_satang INTEGER NOT NULL,
       note TEXT,
+      receipt_url TEXT,
       settlement_id INTEGER REFERENCES settlements(id)
     )`;
+  // Migration for databases created before slip attachments existed.
+  await sql`ALTER TABLE purchases ADD COLUMN IF NOT EXISTS receipt_url TEXT`;
 
   const [{ c: personCount }] =
     (await sql`SELECT COUNT(*)::int AS c FROM persons`) as { c: number }[];
@@ -90,10 +93,10 @@ export async function createPostgresDb(): Promise<Db> {
     async getSettlements() {
       return (await sql`SELECT * FROM settlements ORDER BY id DESC`) as Settlement[];
     },
-    async insertPurchase(date, storeId, payerId, amountSatang, note) {
+    async insertPurchase(date, storeId, payerId, amountSatang, note, receiptUrl) {
       await sql`
-        INSERT INTO purchases (date, store_id, payer_id, amount_satang, note)
-        VALUES (${date}, ${storeId}, ${payerId}, ${amountSatang}, ${note})`;
+        INSERT INTO purchases (date, store_id, payer_id, amount_satang, note, receipt_url)
+        VALUES (${date}, ${storeId}, ${payerId}, ${amountSatang}, ${note}, ${receiptUrl})`;
     },
     async deleteUnsettledPurchase(id, restrictToPayerId) {
       if (restrictToPayerId !== undefined) {

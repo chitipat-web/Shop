@@ -1,10 +1,29 @@
 "use client";
 
-import { useState } from "react";
+import { useRef, useState } from "react";
 import type { Person, Store } from "@/lib/db";
 import { addPurchase } from "@/app/actions";
 import Avatar from "./Avatar";
-import { PencilIcon, ReceiptIcon } from "./icons";
+import { CameraIcon, PencilIcon, ReceiptIcon, XIcon } from "./icons";
+
+/** Downscale to ≤1280px JPEG so uploads stay small on mobile data. */
+async function compressImage(file: File): Promise<File> {
+  try {
+    const bitmap = await createImageBitmap(file);
+    const scale = Math.min(1, 1280 / Math.max(bitmap.width, bitmap.height));
+    const canvas = document.createElement("canvas");
+    canvas.width = Math.round(bitmap.width * scale);
+    canvas.height = Math.round(bitmap.height * scale);
+    canvas.getContext("2d")?.drawImage(bitmap, 0, 0, canvas.width, canvas.height);
+    const blob = await new Promise<Blob | null>((resolve) =>
+      canvas.toBlob(resolve, "image/jpeg", 0.82)
+    );
+    if (!blob || blob.size >= file.size) return file;
+    return new File([blob], "slip.jpg", { type: "image/jpeg" });
+  } catch {
+    return file;
+  }
+}
 
 export default function QuickAddForm({
   stores,
@@ -21,8 +40,30 @@ export default function QuickAddForm({
   // Default the payer to whoever is logged in — they can still tap the other.
   const [payerId, setPayerId] = useState(currentPersonId);
   const [showMore, setShowMore] = useState(false);
+  const [preview, setPreview] = useState<string | null>(null);
+  const fileRef = useRef<HTMLInputElement>(null);
 
   const selectedStore = stores.find((s) => s.id === storeId);
+
+  async function onPickReceipt(e: React.ChangeEvent<HTMLInputElement>) {
+    const input = e.target;
+    const file = input.files?.[0];
+    if (!file) return;
+    const compressed = await compressImage(file);
+    if (compressed !== file) {
+      const dt = new DataTransfer();
+      dt.items.add(compressed);
+      input.files = dt.files;
+    }
+    if (preview) URL.revokeObjectURL(preview);
+    setPreview(URL.createObjectURL(compressed));
+  }
+
+  function clearReceipt() {
+    if (fileRef.current) fileRef.current.value = "";
+    if (preview) URL.revokeObjectURL(preview);
+    setPreview(null);
+  }
 
   return (
     <form action={addPurchase} className="flex flex-col gap-5">
@@ -124,6 +165,47 @@ export default function QuickAddForm({
             );
           })}
         </div>
+      </section>
+
+      <section>
+        <input
+          ref={fileRef}
+          type="file"
+          name="receipt"
+          accept="image/*"
+          onChange={onPickReceipt}
+          className="hidden"
+        />
+        {preview ? (
+          <div className="flex items-center gap-3 rounded-2xl bg-white p-3 shadow-sm ring-1 ring-black/5">
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img
+              src={preview}
+              alt="สลิปที่แนบ"
+              className="h-14 w-14 rounded-xl object-cover"
+            />
+            <span className="flex-1 text-sm font-medium text-neutral-600">
+              แนบสลิปแล้ว ✓
+            </span>
+            <button
+              type="button"
+              onClick={clearReceipt}
+              aria-label="ลบรูปที่แนบ"
+              className="rounded-lg p-2 text-neutral-400 active:bg-red-50 active:text-red-600"
+            >
+              <XIcon className="h-4 w-4" />
+            </button>
+          </div>
+        ) : (
+          <button
+            type="button"
+            onClick={() => fileRef.current?.click()}
+            className="flex w-full items-center justify-center gap-2 rounded-2xl border-2 border-dashed border-neutral-300 bg-white/60 py-3.5 text-sm font-medium text-neutral-500 transition active:scale-[0.99] active:bg-white"
+          >
+            <CameraIcon className="h-5 w-5" />
+            แนบสลิป / รูปบิล (ไม่บังคับ)
+          </button>
+        )}
       </section>
 
       {showMore ? (
