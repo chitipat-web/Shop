@@ -1,4 +1,5 @@
 import { getDb, type PurchaseRow } from "@/lib/db";
+import { requireUser } from "@/lib/auth/access";
 import { satangToBahtText, thaiDate } from "@/lib/format";
 import { deletePurchase } from "@/app/actions";
 
@@ -10,6 +11,7 @@ export default async function ListPage({
   searchParams: Promise<{ added?: string }>;
 }) {
   const { added } = await searchParams;
+  await requireUser();
   const db = await getDb();
   const [purchases, summary, persons] = await Promise.all([
     db.getUnsettledPurchases(),

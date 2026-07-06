@@ -1,4 +1,5 @@
 import { getDb } from "@/lib/db";
+import { requireUser } from "@/lib/auth/access";
 import { todayBangkok } from "@/lib/format";
 import QuickAddForm from "@/components/QuickAddForm";
 
@@ -10,6 +11,7 @@ export default async function QuickAddPage({
   searchParams: Promise<{ error?: string }>;
 }) {
   const { error } = await searchParams;
+  const { personId } = await requireUser();
   const db = await getDb();
   const [stores, persons] = await Promise.all([
     db.getStores(),
@@ -24,7 +26,12 @@ export default async function QuickAddPage({
           กรอกไม่ครบหรือยอดเงินไม่ถูกต้อง ลองใหม่อีกครั้งครับ
         </p>
       )}
-      <QuickAddForm stores={stores} persons={persons} today={todayBangkok()} />
+      <QuickAddForm
+        stores={stores}
+        persons={persons}
+        today={todayBangkok()}
+        currentPersonId={personId}
+      />
     </div>
   );
 }

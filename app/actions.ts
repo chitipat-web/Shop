@@ -3,6 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { getDb } from "@/lib/db";
+import { requireUser } from "@/lib/auth/access";
 import { parseBahtToSatang, todayBangkok } from "@/lib/format";
 
 function revalidateAll() {
@@ -13,6 +14,7 @@ function revalidateAll() {
 }
 
 export async function addPurchase(formData: FormData) {
+  await requireUser();
   const storeId = Number(formData.get("store_id"));
   const payerId = Number(formData.get("payer_id"));
   const amount = parseBahtToSatang(String(formData.get("amount") ?? ""));
@@ -31,6 +33,7 @@ export async function addPurchase(formData: FormData) {
 }
 
 export async function deletePurchase(formData: FormData) {
+  await requireUser();
   const id = Number(formData.get("id"));
   const db = await getDb();
   // Never touch already-settled records.
@@ -39,6 +42,7 @@ export async function deletePurchase(formData: FormData) {
 }
 
 export async function settleUp() {
+  await requireUser();
   const db = await getDb();
   await db.settleAll(todayBangkok().slice(0, 7), new Date().toISOString());
   revalidateAll();
@@ -46,6 +50,7 @@ export async function settleUp() {
 }
 
 export async function updatePersonNames(formData: FormData) {
+  await requireUser();
   const db = await getDb();
   for (const id of [1, 2]) {
     const name = String(formData.get(`person_${id}`) ?? "").trim();
@@ -58,6 +63,7 @@ export async function updatePersonNames(formData: FormData) {
 }
 
 export async function updateStore(formData: FormData) {
+  await requireUser();
   const id = Number(formData.get("id"));
   const name = String(formData.get("name") ?? "").trim();
   const hasReceipt = formData.get("has_receipt") === "on" ? 1 : 0;
@@ -70,6 +76,7 @@ export async function updateStore(formData: FormData) {
 }
 
 export async function addStore(formData: FormData) {
+  await requireUser();
   const name = String(formData.get("name") ?? "").trim();
   const hasReceipt = formData.get("has_receipt") === "on" ? 1 : 0;
   if (name) {

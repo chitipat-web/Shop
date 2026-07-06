@@ -12,6 +12,7 @@ const tabs = [
 
 export default function BottomNav() {
   const pathname = usePathname();
+  if (pathname.startsWith("/auth")) return null;
   return (
     <nav className="fixed inset-x-0 bottom-0 z-10 border-t border-neutral-200 bg-white pb-[env(safe-area-inset-bottom)]">
       <div className="mx-auto flex max-w-md">

@@ -8,13 +8,16 @@ export default function QuickAddForm({
   stores,
   persons,
   today,
+  currentPersonId,
 }: {
   stores: Store[];
   persons: Person[];
   today: string;
+  currentPersonId: number;
 }) {
   const [storeId, setStoreId] = useState(stores[0]?.id ?? 0);
-  const [payerId, setPayerId] = useState(persons[0]?.id ?? 0);
+  // Default the payer to whoever is logged in — they can still tap the other.
+  const [payerId, setPayerId] = useState(currentPersonId);
   const [showMore, setShowMore] = useState(false);
 
   const selectedStore = stores.find((s) => s.id === storeId);

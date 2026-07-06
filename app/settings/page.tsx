@@ -1,5 +1,7 @@
 import { getDb } from "@/lib/db";
+import { requireUser } from "@/lib/auth/access";
 import { addStore, updatePersonNames, updateStore } from "@/app/actions";
+import { signOut } from "@/app/auth/actions";
 
 export const dynamic = "force-dynamic";
 
@@ -9,6 +11,7 @@ export default async function SettingsPage({
   searchParams: Promise<{ saved?: string }>;
 }) {
   const { saved } = await searchParams;
+  const user = await requireUser();
   const db = await getDb();
   const [persons, stores] = await Promise.all([
     db.getPersons(),
@@ -99,6 +102,21 @@ export default async function SettingsPage({
             className="shrink-0 rounded-lg bg-teal-600 px-3 py-2 text-sm font-semibold text-white active:bg-teal-700"
           >
             เพิ่ม
+          </button>
+        </form>
+      </section>
+
+      <section className="mt-6 rounded-xl bg-white p-4 shadow-sm">
+        <h2 className="mb-1 font-semibold">บัญชีผู้ใช้</h2>
+        <p className="mb-3 text-sm text-neutral-500">
+          เข้าสู่ระบบด้วย {user.email}
+        </p>
+        <form action={signOut}>
+          <button
+            type="submit"
+            className="rounded-xl bg-neutral-100 px-4 py-2.5 text-sm font-semibold text-neutral-700 active:bg-neutral-200"
+          >
+            ออกจากระบบ
           </button>
         </form>
       </section>
