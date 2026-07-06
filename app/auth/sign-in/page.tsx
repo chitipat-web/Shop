@@ -9,26 +9,27 @@ export default async function SignInPage({
 }) {
   const { error } = await searchParams;
   return (
-    <div className="flex min-h-[70dvh] flex-col items-center justify-center gap-6 text-center">
-      <div>
-        <p className="text-5xl">🛒</p>
-        <h1 className="mt-3 text-2xl font-bold">Shop</h1>
+    <div className="flex min-h-[80dvh] flex-col items-center justify-center gap-6 text-center">
+      <div className="w-full rounded-3xl bg-white px-6 py-10 shadow-xl shadow-teal-900/10">
+        <p className="text-6xl">🛒</p>
+        <h1 className="mt-3 bg-gradient-to-r from-teal-600 to-emerald-600 bg-clip-text text-3xl font-bold text-transparent">
+          Shop
+        </h1>
         <p className="mt-1 text-neutral-500">
           บันทึกของที่ซื้อ แล้วหารกันสิ้นเดือน
         </p>
-      </div>
 
-      {error && (
-        <p className="rounded-lg bg-red-50 px-3 py-2 text-sm text-red-700">
-          เข้าสู่ระบบไม่สำเร็จ ลองใหม่อีกครั้งครับ
-        </p>
-      )}
+        {error && (
+          <p className="mx-auto mt-5 max-w-xs rounded-xl bg-red-50 px-3 py-2 text-sm font-medium text-red-700">
+            เข้าสู่ระบบไม่สำเร็จ ลองใหม่อีกครั้งครับ
+          </p>
+        )}
 
-      <form action={signInWithGoogle}>
-        <button
-          type="submit"
-          className="flex items-center gap-3 rounded-xl border-2 border-neutral-200 bg-white px-6 py-3.5 text-base font-semibold text-neutral-700 shadow-sm active:bg-neutral-50"
-        >
+        <form action={signInWithGoogle} className="mt-7 flex justify-center">
+          <button
+            type="submit"
+            className="flex items-center gap-3 rounded-2xl border border-neutral-200 bg-white px-7 py-3.5 text-base font-semibold text-neutral-700 shadow-md transition active:scale-[0.98]"
+          >
           <svg width="20" height="20" viewBox="0 0 48 48" aria-hidden="true">
             <path
               fill="#EA4335"
@@ -47,13 +48,14 @@ export default async function SignInPage({
               d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.15 1.45-4.92 2.3-8.16 2.3-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"
             />
           </svg>
-          เข้าสู่ระบบด้วย Google
-        </button>
-      </form>
+            เข้าสู่ระบบด้วย Google
+          </button>
+        </form>
 
-      <p className="max-w-xs text-xs text-neutral-400">
-        ใช้ได้เฉพาะบัญชีสมาชิก 2 คนที่ลงทะเบียนไว้เท่านั้น
-      </p>
+        <p className="mx-auto mt-6 max-w-xs text-xs text-neutral-400">
+          ใช้ได้เฉพาะบัญชีสมาชิก 2 คนที่ลงทะเบียนไว้เท่านั้น
+        </p>
+      </div>
     </div>
   );
 }

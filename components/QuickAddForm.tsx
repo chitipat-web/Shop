@@ -28,60 +28,73 @@ export default function QuickAddForm({
       <input type="hidden" name="payer_id" value={payerId} />
 
       <section>
-        <p className="mb-2 text-sm font-medium text-neutral-600">ซื้อที่ร้าน</p>
-        <div className="grid grid-cols-2 gap-2">
+        <p className="mb-2 text-sm font-medium text-neutral-500">ซื้อที่ร้าน</p>
+        <div className="grid grid-cols-2 gap-3">
           {stores.map((store) => (
             <button
               key={store.id}
               type="button"
               onClick={() => setStoreId(store.id)}
-              className={`rounded-xl border-2 px-3 py-4 text-base font-semibold ${
+              className={`rounded-2xl border-2 px-3 py-4 text-base font-semibold transition active:scale-[0.98] ${
                 storeId === store.id
-                  ? "border-teal-600 bg-teal-50 text-teal-700"
-                  : "border-neutral-200 bg-white text-neutral-700"
+                  ? "border-teal-500 bg-gradient-to-br from-teal-50 to-emerald-50 text-teal-800 shadow-md shadow-teal-600/10"
+                  : "border-transparent bg-white text-neutral-700 shadow-sm"
               }`}
             >
-              {store.name}
-              <span className="mt-1 block text-xs font-normal text-neutral-500">
-                {store.has_receipt ? "🧾 มีบิล" : "✏️ ไม่มีบิล"}
+              <span className="block text-2xl leading-none">
+                {store.has_receipt ? "🧾" : "✏️"}
+              </span>
+              <span className="mt-1.5 block">{store.name}</span>
+              <span
+                className={`mt-0.5 block text-xs font-normal ${
+                  storeId === store.id ? "text-teal-600" : "text-neutral-400"
+                }`}
+              >
+                {store.has_receipt ? "มีบิล" : "ไม่มีบิล"}
               </span>
             </button>
           ))}
         </div>
         {selectedStore && !selectedStore.has_receipt && (
-          <p className="mt-2 text-xs text-amber-700">
-            ร้านนี้ไม่มีบิล — จดตอนนี้เลยกันลืม ใส่โน้ตสั้น ๆ ก็ช่วยได้
+          <p className="mt-2.5 rounded-xl bg-amber-50 px-3 py-2 text-xs font-medium text-amber-700">
+            💡 ร้านนี้ไม่มีบิล — จดตอนนี้เลยกันลืม ใส่โน้ตสั้น ๆ ก็ช่วยได้
           </p>
         )}
       </section>
 
       <section>
-        <p className="mb-2 text-sm font-medium text-neutral-600">ยอดเงิน (บาท)</p>
-        <input
-          name="amount"
-          type="text"
-          inputMode="decimal"
-          placeholder="0"
-          autoComplete="off"
-          required
-          className="w-full rounded-xl border-2 border-neutral-200 bg-white px-4 py-4 text-center text-3xl font-bold outline-none focus:border-teal-600"
-        />
+        <p className="mb-2 text-sm font-medium text-neutral-500">
+          ยอดเงิน (บาท)
+        </p>
+        <div className="flex items-center rounded-2xl bg-white px-5 shadow-sm ring-2 ring-transparent transition focus-within:ring-teal-500">
+          <span className="text-2xl font-semibold text-neutral-300">฿</span>
+          <input
+            name="amount"
+            type="text"
+            inputMode="decimal"
+            placeholder="0"
+            autoComplete="off"
+            required
+            className="w-full bg-transparent px-2 py-4 text-center text-4xl font-bold tracking-tight outline-none placeholder:text-neutral-200"
+          />
+        </div>
       </section>
 
       <section>
-        <p className="mb-2 text-sm font-medium text-neutral-600">ใครจ่าย</p>
-        <div className="grid grid-cols-2 gap-2">
+        <p className="mb-2 text-sm font-medium text-neutral-500">ใครจ่าย</p>
+        <div className="flex rounded-2xl bg-neutral-200/60 p-1.5">
           {persons.map((person) => (
             <button
               key={person.id}
               type="button"
               onClick={() => setPayerId(person.id)}
-              className={`rounded-xl border-2 px-3 py-3 text-base font-semibold ${
+              className={`flex-1 rounded-xl py-2.5 text-base font-semibold transition active:scale-[0.98] ${
                 payerId === person.id
-                  ? "border-teal-600 bg-teal-50 text-teal-700"
-                  : "border-neutral-200 bg-white text-neutral-700"
+                  ? "bg-white text-teal-700 shadow"
+                  : "text-neutral-500"
               }`}
             >
+              {person.id === 1 ? "🧑‍💼 " : "🧑‍🍳 "}
               {person.name}
             </button>
           ))}
@@ -89,23 +102,23 @@ export default function QuickAddForm({
       </section>
 
       {showMore ? (
-        <section className="flex flex-col gap-3">
-          <label className="text-sm font-medium text-neutral-600">
+        <section className="flex flex-col gap-3 rounded-2xl bg-white p-4 shadow-sm">
+          <label className="text-sm font-medium text-neutral-500">
             วันที่
             <input
               name="date"
               type="date"
               defaultValue={today}
-              className="mt-1 w-full rounded-xl border-2 border-neutral-200 bg-white px-3 py-2.5 text-base outline-none focus:border-teal-600"
+              className="mt-1 w-full rounded-xl border-2 border-neutral-100 bg-white px-3 py-2.5 text-base font-normal text-neutral-800 outline-none focus:border-teal-500"
             />
           </label>
-          <label className="text-sm font-medium text-neutral-600">
+          <label className="text-sm font-medium text-neutral-500">
             โน้ต (เช่น ผัก+ไข่+หมู)
             <input
               name="note"
               type="text"
               placeholder="ซื้ออะไรมาบ้าง"
-              className="mt-1 w-full rounded-xl border-2 border-neutral-200 bg-white px-3 py-2.5 text-base outline-none focus:border-teal-600"
+              className="mt-1 w-full rounded-xl border-2 border-neutral-100 bg-white px-3 py-2.5 text-base font-normal text-neutral-800 outline-none placeholder:text-neutral-300 focus:border-teal-500"
             />
           </label>
         </section>
@@ -115,7 +128,7 @@ export default function QuickAddForm({
           <button
             type="button"
             onClick={() => setShowMore(true)}
-            className="self-start text-sm text-teal-700 underline underline-offset-2"
+            className="self-start text-sm font-medium text-teal-700 underline underline-offset-4"
           >
             + วันที่ย้อนหลัง / ใส่โน้ต
           </button>
@@ -124,7 +137,7 @@ export default function QuickAddForm({
 
       <button
         type="submit"
-        className="rounded-xl bg-teal-600 py-4 text-lg font-bold text-white active:bg-teal-700"
+        className="rounded-2xl bg-gradient-to-r from-teal-500 to-emerald-600 py-4 text-lg font-bold text-white shadow-lg shadow-teal-600/30 transition active:scale-[0.98]"
       >
         บันทึก
       </button>

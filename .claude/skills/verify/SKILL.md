@@ -13,10 +13,16 @@ Next.js 16 (App Router, Turbopack) + better-sqlite3. SQLite file lives at
 
 ```bash
 npm run build                      # must pass first
-rm -rf data                       # optional: fresh DB
-npm run start -- -p 3000 &        # production server
+rm -rf data                        # optional: fresh DB
+# DATABASE_URL="" forces local SQLite even when .env.local has the Neon
+# prod URL; AUTH_DISABLED=1 bypasses Google login (never set on Vercel).
+DATABASE_URL="" AUTH_DISABLED=1 npm run start -- -p 3000 &
 curl -s -o /dev/null -w "%{http_code}" http://localhost:3000/   # expect 200
 ```
+
+Auth flow checks (without AUTH_DISABLED): unauthenticated `GET /` →
+307 to `/auth/sign-in`; clicking the Google button → 303 → Neon Auth
+`/sign-in/social/init` URL. Full Google login is manual-only.
 
 ## Drive (Playwright, chromium at /opt/pw-browsers/chromium)
 

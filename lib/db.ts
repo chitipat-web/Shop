@@ -22,6 +22,7 @@ export type Settlement = {
 };
 export type PurchaseRow = Purchase & {
   store_name: string;
+  store_has_receipt: number;
   payer_name: string;
 };
 export type Summary = {

@@ -65,7 +65,7 @@ export async function createPostgresDb(): Promise<Db> {
     },
     async getUnsettledPurchases() {
       return (await sql`
-        SELECT p.*, s.name AS store_name, per.name AS payer_name
+        SELECT p.*, s.name AS store_name, s.has_receipt AS store_has_receipt, per.name AS payer_name
         FROM purchases p
         JOIN stores s ON s.id = p.store_id
         JOIN persons per ON per.id = p.payer_id

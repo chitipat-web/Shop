@@ -1,8 +1,15 @@
+import { NextResponse } from "next/server";
 import { auth } from "@/lib/auth/server";
 
-export default auth.middleware({
+const neonMiddleware = auth.middleware({
   loginUrl: "/auth/sign-in",
 });
+
+// AUTH_DISABLED=1 bypasses login for local UI testing only — never set on Vercel.
+const middleware =
+  process.env.AUTH_DISABLED === "1" ? () => NextResponse.next() : neonMiddleware;
+
+export default middleware;
 
 export const config = {
   matcher: [
