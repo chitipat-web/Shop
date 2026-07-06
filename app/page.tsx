@@ -1,4 +1,4 @@
-import { getPersons, getStores } from "@/lib/db";
+import { getDb } from "@/lib/db";
 import { todayBangkok } from "@/lib/format";
 import QuickAddForm from "@/components/QuickAddForm";
 
@@ -10,8 +10,11 @@ export default async function QuickAddPage({
   searchParams: Promise<{ error?: string }>;
 }) {
   const { error } = await searchParams;
-  const stores = getStores();
-  const persons = getPersons();
+  const db = await getDb();
+  const [stores, persons] = await Promise.all([
+    db.getStores(),
+    db.getPersons(),
+  ]);
 
   return (
     <div>

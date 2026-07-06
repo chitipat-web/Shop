@@ -2,7 +2,7 @@
 
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
-import { getDb, getUnsettledSummary } from "@/lib/db";
+import { getDb } from "@/lib/db";
 import { parseBahtToSatang, todayBangkok } from "@/lib/format";
 
 function revalidateAll() {
@@ -23,12 +23,8 @@ export async function addPurchase(formData: FormData) {
     redirect("/?error=invalid");
   }
 
-  getDb()
-    .prepare(
-      `INSERT INTO purchases (date, store_id, payer_id, amount_satang, note)
-       VALUES (?, ?, ?, ?, ?)`
-    )
-    .run(date, storeId, payerId, amount, note || null);
+  const db = await getDb();
+  await db.insertPurchase(date, storeId, payerId, amount, note || null);
 
   revalidateAll();
   redirect("/list?added=1");
@@ -36,57 +32,25 @@ export async function addPurchase(formData: FormData) {
 
 export async function deletePurchase(formData: FormData) {
   const id = Number(formData.get("id"));
+  const db = await getDb();
   // Never touch already-settled records.
-  getDb()
-    .prepare("DELETE FROM purchases WHERE id = ? AND settlement_id IS NULL")
-    .run(id);
+  await db.deleteUnsettledPurchase(id);
   revalidateAll();
 }
 
 export async function settleUp() {
-  const db = getDb();
-  const summary = getUnsettledSummary();
-  if (summary.count === 0) return;
-
-  const net1 = summary.net1;
-  const fromPerson = net1 >= 0 ? 2 : 1;
-  const toPerson = net1 >= 0 ? 1 : 2;
-  const label = todayBangkok().slice(0, 7);
-
-  const settle = db.transaction(() => {
-    const result = db
-      .prepare(
-        `INSERT INTO settlements
-           (label, from_person, to_person, amount_satang,
-            paid_p1_satang, paid_p2_satang, total_satang, settled_at)
-         VALUES (?, ?, ?, ?, ?, ?, ?, ?)`
-      )
-      .run(
-        label,
-        fromPerson,
-        toPerson,
-        Math.abs(net1),
-        summary.paid1,
-        summary.paid2,
-        summary.total,
-        new Date().toISOString()
-      );
-    db.prepare(
-      "UPDATE purchases SET settlement_id = ? WHERE settlement_id IS NULL"
-    ).run(result.lastInsertRowid);
-  });
-  settle();
-
+  const db = await getDb();
+  await db.settleAll(todayBangkok().slice(0, 7), new Date().toISOString());
   revalidateAll();
   redirect("/settle?done=1");
 }
 
 export async function updatePersonNames(formData: FormData) {
-  const db = getDb();
+  const db = await getDb();
   for (const id of [1, 2]) {
     const name = String(formData.get(`person_${id}`) ?? "").trim();
     if (name) {
-      db.prepare("UPDATE persons SET name = ? WHERE id = ?").run(name, id);
+      await db.updatePersonName(id, name);
     }
   }
   revalidateAll();
@@ -98,9 +62,8 @@ export async function updateStore(formData: FormData) {
   const name = String(formData.get("name") ?? "").trim();
   const hasReceipt = formData.get("has_receipt") === "on" ? 1 : 0;
   if (id && name) {
-    getDb()
-      .prepare("UPDATE stores SET name = ?, has_receipt = ? WHERE id = ?")
-      .run(name, hasReceipt, id);
+    const db = await getDb();
+    await db.updateStore(id, name, hasReceipt);
   }
   revalidateAll();
   redirect("/settings?saved=1");
@@ -110,9 +73,8 @@ export async function addStore(formData: FormData) {
   const name = String(formData.get("name") ?? "").trim();
   const hasReceipt = formData.get("has_receipt") === "on" ? 1 : 0;
   if (name) {
-    getDb()
-      .prepare("INSERT INTO stores (name, has_receipt) VALUES (?, ?)")
-      .run(name, hasReceipt);
+    const db = await getDb();
+    await db.insertStore(name, hasReceipt);
   }
   revalidateAll();
   redirect("/settings?saved=1");

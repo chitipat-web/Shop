@@ -1,4 +1,4 @@
-import { getPersons, getStores } from "@/lib/db";
+import { getDb } from "@/lib/db";
 import { addStore, updatePersonNames, updateStore } from "@/app/actions";
 
 export const dynamic = "force-dynamic";
@@ -9,8 +9,11 @@ export default async function SettingsPage({
   searchParams: Promise<{ saved?: string }>;
 }) {
   const { saved } = await searchParams;
-  const persons = getPersons();
-  const stores = getStores();
+  const db = await getDb();
+  const [persons, stores] = await Promise.all([
+    db.getPersons(),
+    db.getStores(),
+  ]);
 
   return (
     <div>

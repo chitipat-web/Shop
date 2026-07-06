@@ -1,4 +1,4 @@
-import { getPersons, getSettlements, getUnsettledSummary } from "@/lib/db";
+import { getDb } from "@/lib/db";
 import { satangToBahtText, thaiMonth } from "@/lib/format";
 import { settleUp } from "@/app/actions";
 
@@ -10,9 +10,12 @@ export default async function SettlePage({
   searchParams: Promise<{ done?: string }>;
 }) {
   const { done } = await searchParams;
-  const summary = getUnsettledSummary();
-  const settlements = getSettlements();
-  const persons = getPersons();
+  const db = await getDb();
+  const [summary, settlements, persons] = await Promise.all([
+    db.getUnsettledSummary(),
+    db.getSettlements(),
+    db.getPersons(),
+  ]);
   const nameOf = (id: number) =>
     persons.find((p) => p.id === id)?.name ?? `คนที่ ${id}`;
   const p1 = nameOf(1);

@@ -1,9 +1,4 @@
-import {
-  getPersons,
-  getUnsettledPurchases,
-  getUnsettledSummary,
-  type PurchaseRow,
-} from "@/lib/db";
+import { getDb, type PurchaseRow } from "@/lib/db";
 import { satangToBahtText, thaiDate } from "@/lib/format";
 import { deletePurchase } from "@/app/actions";
 
@@ -15,9 +10,12 @@ export default async function ListPage({
   searchParams: Promise<{ added?: string }>;
 }) {
   const { added } = await searchParams;
-  const purchases = getUnsettledPurchases();
-  const summary = getUnsettledSummary();
-  const persons = getPersons();
+  const db = await getDb();
+  const [purchases, summary, persons] = await Promise.all([
+    db.getUnsettledPurchases(),
+    db.getUnsettledSummary(),
+    db.getPersons(),
+  ]);
   const p1 = persons.find((p) => p.id === 1)!;
   const p2 = persons.find((p) => p.id === 2)!;
 
