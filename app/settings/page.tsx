@@ -35,13 +35,15 @@ export default async function SettingsPage({
         <h2 className="mb-3 font-semibold">👥 ชื่อสมาชิก 2 คน</h2>
         <form action={updatePersonNames} className="flex flex-col gap-3">
           {persons.map((person) => (
-            <input
-              key={person.id}
-              name={`person_${person.id}`}
-              defaultValue={person.name}
-              required
-              className={inputCls}
-            />
+            <label key={person.id} className="text-xs font-medium text-neutral-400">
+              {person.id === user.personId ? "คุณ" : "อีกคน"}
+              <input
+                name={`person_${person.id}`}
+                defaultValue={person.name}
+                required
+                className={`mt-1 text-base font-normal text-neutral-800 ${inputCls}`}
+              />
+            </label>
           ))}
           <button
             type="submit"
