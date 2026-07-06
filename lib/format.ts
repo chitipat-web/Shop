@@ -20,6 +20,14 @@ export function todayBangkok(): string {
   return new Date().toLocaleDateString("sv-SE", { timeZone: "Asia/Bangkok" });
 }
 
+export function relativeThaiDate(isoDate: string, today: string): string {
+  if (isoDate === today) return "วันนี้";
+  const d = new Date(isoDate + "T00:00:00Z");
+  const t = new Date(today + "T00:00:00Z");
+  if (t.getTime() - d.getTime() === 86400000) return "เมื่อวาน";
+  return thaiDate(isoDate);
+}
+
 export function thaiDate(isoDate: string): string {
   const [y, m, d] = isoDate.split("-").map(Number);
   const months = [

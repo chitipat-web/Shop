@@ -29,7 +29,8 @@ export async function addPurchase(formData: FormData) {
   await db.insertPurchase(date, storeId, payerId, amount, note || null);
 
   revalidateAll();
-  redirect("/list?added=1");
+  // Stay on quick-add so back-to-back entries are fast.
+  redirect("/?added=1");
 }
 
 export async function deletePurchase(formData: FormData) {

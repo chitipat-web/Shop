@@ -31,9 +31,9 @@ export default async function SettingsPage({
         </p>
       )}
 
-      <section className="mb-5 rounded-2xl bg-white p-4 shadow-sm">
+      <section className="mb-5 rounded-2xl bg-white p-4 shadow-sm ring-1 ring-black/5">
         <h2 className="mb-3 font-semibold">
-          {user.isAdmin ? "👥 ชื่อสมาชิก 2 คน" : "👤 ชื่อของคุณ"}
+          {user.isAdmin ? "ชื่อสมาชิก 2 คน" : "ชื่อของคุณ"}
         </h2>
         <form action={updatePersonNames} className="flex flex-col gap-3">
           {persons
@@ -63,8 +63,8 @@ export default async function SettingsPage({
 
       {user.isAdmin && (
       <>
-      <section className="mb-5 rounded-2xl bg-white p-4 shadow-sm">
-        <h2 className="mb-3 font-semibold">🏪 ร้านค้า</h2>
+      <section className="mb-5 rounded-2xl bg-white p-4 shadow-sm ring-1 ring-black/5">
+        <h2 className="mb-3 font-semibold">ร้านค้า</h2>
         <div className="flex flex-col gap-4">
           {stores.map((store) => (
             <form
@@ -99,8 +99,8 @@ export default async function SettingsPage({
         </div>
       </section>
 
-      <section className="rounded-2xl bg-white p-4 shadow-sm">
-        <h2 className="mb-3 font-semibold">➕ เพิ่มร้านใหม่</h2>
+      <section className="rounded-2xl bg-white p-4 shadow-sm ring-1 ring-black/5">
+        <h2 className="mb-3 font-semibold">เพิ่มร้านใหม่</h2>
         <form action={addStore} className="flex items-center gap-2">
           <input
             name="name"
@@ -123,8 +123,8 @@ export default async function SettingsPage({
       </>
       )}
 
-      <section className="mt-5 rounded-2xl bg-white p-4 shadow-sm">
-        <h2 className="mb-1 font-semibold">🔐 บัญชีผู้ใช้</h2>
+      <section className="mt-5 rounded-2xl bg-white p-4 shadow-sm ring-1 ring-black/5">
+        <h2 className="mb-1 font-semibold">บัญชีผู้ใช้</h2>
         <p className="mb-3 text-sm text-neutral-500">
           เข้าสู่ระบบด้วย {user.email}
           {user.isAdmin && (

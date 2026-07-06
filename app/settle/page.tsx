@@ -2,6 +2,8 @@ import { getDb } from "@/lib/db";
 import { requireUser } from "@/lib/auth/access";
 import { satangToBahtText, thaiMonth } from "@/lib/format";
 import { settleUp } from "@/app/actions";
+import Avatar from "@/components/Avatar";
+import { CheckCircleIcon, TransferIcon } from "@/components/icons";
 
 export const dynamic = "force-dynamic";
 
@@ -35,23 +37,53 @@ export default async function SettlePage({
       )}
 
       {summary.count === 0 ? (
-        <div className="rounded-2xl bg-white py-12 text-center shadow-sm">
-          <p className="text-4xl">✨</p>
-          <p className="mt-2 text-neutral-500">ไม่มีรายการค้างเคลียร์</p>
+        <div className="rounded-2xl bg-white py-12 text-center shadow-sm ring-1 ring-black/5">
+          <CheckCircleIcon className="mx-auto h-10 w-10 text-teal-500" />
+          <p className="mt-3 text-neutral-500">ไม่มีรายการค้างเคลียร์</p>
         </div>
       ) : (
-        <div className="overflow-hidden rounded-2xl bg-white shadow-sm">
-          <div className="bg-gradient-to-br from-teal-600 to-emerald-700 p-5 text-center text-white">
+        <div className="overflow-hidden rounded-2xl bg-white shadow-sm ring-1 ring-black/5">
+          <div className="bg-gradient-to-br from-teal-700 to-emerald-700 p-5 text-center text-white">
             <p className="text-sm text-teal-100">
               {summary.net1 === 0 ? "สรุปรอบนี้" : "สรุปรอบนี้ต้องโอน"}
             </p>
-            <p className="mt-1 text-2xl font-bold leading-snug">
-              {summary.net1 === 0
-                ? "ยอดเท่ากันพอดี ไม่ต้องโอน 🎉"
-                : summary.net1 > 0
-                  ? `${p2} โอนให้ ${p1} ฿${satangToBahtText(summary.net1)}`
-                  : `${p1} โอนให้ ${p2} ฿${satangToBahtText(-summary.net1)}`}
-            </p>
+            {summary.net1 === 0 ? (
+              <p className="mt-1 text-2xl font-bold leading-snug">
+                ยอดเท่ากันพอดี ไม่ต้องโอน 🎉
+              </p>
+            ) : (
+              <>
+                <div className="mt-3 flex items-center justify-center gap-3">
+                  <span className="flex flex-col items-center gap-1">
+                    <Avatar
+                      name={summary.net1 > 0 ? p2 : p1}
+                      personId={summary.net1 > 0 ? 2 : 1}
+                      size="h-11 w-11 text-base"
+                    />
+                    <span className="max-w-24 truncate text-xs text-teal-100">
+                      {summary.net1 > 0 ? p2 : p1}
+                    </span>
+                  </span>
+                  <span className="flex flex-col items-center px-1 text-teal-100">
+                    <TransferIcon className="h-6 w-6" />
+                    <span className="mt-0.5 text-[10px]">โอนให้</span>
+                  </span>
+                  <span className="flex flex-col items-center gap-1">
+                    <Avatar
+                      name={summary.net1 > 0 ? p1 : p2}
+                      personId={summary.net1 > 0 ? 1 : 2}
+                      size="h-11 w-11 text-base"
+                    />
+                    <span className="max-w-24 truncate text-xs text-teal-100">
+                      {summary.net1 > 0 ? p1 : p2}
+                    </span>
+                  </span>
+                </div>
+                <p className="mt-2 text-3xl font-bold tabular-nums leading-snug">
+                  ฿{satangToBahtText(Math.abs(summary.net1))}
+                </p>
+              </>
+            )}
           </div>
 
           <div className="p-5">
@@ -59,7 +91,7 @@ export default async function SettlePage({
               <tbody className="divide-y divide-neutral-100">
                 <tr>
                   <td className="py-2.5 text-neutral-500">รวมที่ซื้อด้วยกัน</td>
-                  <td className="py-2.5 text-right font-semibold">
+                  <td className="py-2.5 text-right font-semibold tabular-nums">
                     ฿{satangToBahtText(summary.total)}
                     <span className="ml-1 font-normal text-neutral-400">
                       ({summary.count} รายการ)
@@ -68,19 +100,19 @@ export default async function SettlePage({
                 </tr>
                 <tr>
                   <td className="py-2.5 text-neutral-500">หารครึ่ง คนละ</td>
-                  <td className="py-2.5 text-right font-semibold">
+                  <td className="py-2.5 text-right font-semibold tabular-nums">
                     ฿{satangToBahtText(share)}
                   </td>
                 </tr>
                 <tr>
                   <td className="py-2.5 text-neutral-500">{p1} จ่ายไปแล้ว</td>
-                  <td className="py-2.5 text-right">
+                  <td className="py-2.5 text-right tabular-nums">
                     ฿{satangToBahtText(summary.paid1)}
                   </td>
                 </tr>
                 <tr>
                   <td className="py-2.5 text-neutral-500">{p2} จ่ายไปแล้ว</td>
-                  <td className="py-2.5 text-right">
+                  <td className="py-2.5 text-right tabular-nums">
                     ฿{satangToBahtText(summary.paid2)}
                   </td>
                 </tr>
@@ -121,8 +153,8 @@ export default async function SettlePage({
                 key={s.id}
                 className="flex items-center gap-3 rounded-2xl bg-white p-4 shadow-sm"
               >
-                <span className="grid h-10 w-10 shrink-0 place-items-center rounded-xl bg-teal-50 text-lg">
-                  ✅
+                <span className="grid h-10 w-10 shrink-0 place-items-center rounded-xl bg-teal-50 text-teal-600">
+                  <CheckCircleIcon className="h-5 w-5" />
                 </span>
                 <div className="min-w-0 flex-1">
                   <p className="font-semibold leading-tight">
