@@ -124,6 +124,21 @@ export default async function SettingsPage({
       )}
 
       <section className="mt-5 rounded-2xl bg-white p-4 shadow-sm ring-1 ring-black/5">
+        <h2 className="mb-1 font-semibold">ข้อมูลทั้งหมด</h2>
+        <p className="mb-3 text-sm text-neutral-500">
+          ดาวน์โหลดทุกรายการ (รวมที่เคลียร์แล้ว) เป็นไฟล์ CSV เปิดใน Excel /
+          Google Sheets ได้
+        </p>
+        <a
+          href="/export"
+          download
+          className="inline-block rounded-xl bg-neutral-100 px-4 py-2.5 text-sm font-semibold text-neutral-600 transition active:bg-neutral-200"
+        >
+          ⬇︎ ดาวน์โหลด CSV
+        </a>
+      </section>
+
+      <section className="mt-5 rounded-2xl bg-white p-4 shadow-sm ring-1 ring-black/5">
         <h2 className="mb-1 font-semibold">บัญชีผู้ใช้</h2>
         <p className="mb-3 text-sm text-neutral-500">
           เข้าสู่ระบบด้วย {user.email}

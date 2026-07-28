@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { getDb, type PurchaseRow } from "@/lib/db";
 import { requireUser } from "@/lib/auth/access";
 import { relativeThaiDate, satangToBahtText, todayBangkok } from "@/lib/format";
@@ -10,9 +11,9 @@ export const dynamic = "force-dynamic";
 export default async function ListPage({
   searchParams,
 }: {
-  searchParams: Promise<{ added?: string }>;
+  searchParams: Promise<{ added?: string; updated?: string }>;
 }) {
-  const { added } = await searchParams;
+  const { added, updated } = await searchParams;
   const user = await requireUser();
   const db = await getDb();
   const [purchases, summary, persons] = await Promise.all([
@@ -35,9 +36,9 @@ export default async function ListPage({
     <div>
       <h1 className="mb-4 text-xl font-bold">รายการที่ยังไม่เคลียร์</h1>
 
-      {added && (
+      {(added || updated) && (
         <p className="mb-3 rounded-xl bg-teal-50 px-3.5 py-2 text-sm font-medium text-teal-800 ring-1 ring-teal-100">
-          ✓ บันทึกแล้ว
+          {updated ? "✓ แก้ไขรายการแล้ว" : "✓ บันทึกแล้ว"}
         </p>
       )}
 
@@ -130,6 +131,14 @@ export default async function ListPage({
                       <span className="whitespace-nowrap font-medium text-neutral-500">
                         {item.payer_name} จ่าย
                       </span>
+                      {item.personal_p1_satang + item.personal_p2_satang > 0 && (
+                        <span className="whitespace-nowrap rounded-md bg-violet-50 px-1.5 py-0.5 font-medium text-violet-600">
+                          ส่วนตัว ฿
+                          {satangToBahtText(
+                            item.personal_p1_satang + item.personal_p2_satang
+                          )}
+                        </span>
+                      )}
                       {item.note && (
                         <span className="truncate">· {item.note}</span>
                       )}
@@ -139,16 +148,25 @@ export default async function ListPage({
                     ฿{satangToBahtText(item.amount_satang)}
                   </span>
                   {(user.isAdmin || item.payer_id === user.personId) && (
-                    <form action={deletePurchase}>
-                      <input type="hidden" name="id" value={item.id} />
-                      <button
-                        type="submit"
-                        aria-label="ลบรายการ"
-                        className="rounded-lg p-1.5 text-neutral-300 transition active:bg-red-50 active:text-red-600"
+                    <span className="flex items-center">
+                      <Link
+                        href={`/edit/${item.id}`}
+                        aria-label="แก้ไขรายการ"
+                        className="rounded-lg p-1.5 text-neutral-300 transition active:bg-teal-50 active:text-teal-700"
                       >
-                        <XIcon className="h-4 w-4" />
-                      </button>
-                    </form>
+                        <PencilIcon className="h-4 w-4" />
+                      </Link>
+                      <form action={deletePurchase}>
+                        <input type="hidden" name="id" value={item.id} />
+                        <button
+                          type="submit"
+                          aria-label="ลบรายการ"
+                          className="rounded-lg p-1.5 text-neutral-300 transition active:bg-red-50 active:text-red-600"
+                        >
+                          <XIcon className="h-4 w-4" />
+                        </button>
+                      </form>
+                    </span>
                   )}
                 </li>
               ))}

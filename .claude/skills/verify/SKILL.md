@@ -30,12 +30,22 @@ Install playwright in a scratch dir (not in this repo). Viewport
 390x844 (mobile-first UI). Flows worth driving:
 
 1. `/` Quick Add: pick store button, fill `input[name="amount"]`,
-   pick payer, submit → redirects to `/list?added=1`.
+   pick payer, submit → redirects to `/?added=1`. Optional personal
+   (no-split) amounts behind "+ มีของส่วนตัวไม่หารในบิลนี้" →
+   `input[name="personal_p1"]` / `personal_p2`; client disables submit
+   when their sum exceeds the amount.
 2. `/list`: summary card shows total, per-person paid, net line
-   ("X ติด Y อยู่ ฿…"). Delete via `button[aria-label="ลบรายการ"]`.
-3. `/settle`: transfer line = |paid1 − paid2| / 2. Click
-   "เคลียร์แล้ว" → `/settle?done=1`, list becomes empty, history appears.
-4. `/settings`: rename persons/stores, toggle มีบิล, add store.
+   ("X ติด Y อยู่ ฿…"). Edit via `a[aria-label="แก้ไขรายการ"]` →
+   `/edit/<id>` (prefilled form, submit → `/list?updated=1`).
+   Delete via `button[aria-label="ลบรายการ"]`.
+3. `/settle`: share_i = personal_i + (total − personal1 − personal2)/2;
+   transfer = |paid1 − share1|. With no personal amounts that reduces
+   to |paid1 − paid2| / 2. Click "เคลียร์แล้ว" → `/settle?done=1`,
+   list becomes empty, history appears.
+4. `/settings`: rename persons/stores, toggle มีบิล, add store,
+   CSV download link at `/export` (BOM + Thai headers).
+5. Roles: `AUTH_DEV_PERSON=2` runs as the non-admin — no settle
+   button, no store management, can only edit/delete own rows.
 
 ## Gotchas
 

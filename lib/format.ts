@@ -6,13 +6,35 @@ export function satangToBahtText(satang: number): string {
   });
 }
 
+/** 20 ล้านบาท — comfortably inside the Postgres int4 columns. */
+const MAX_SATANG = 2_000_000_000;
+
 /** Parse a baht string like "123", "1,234.50" into satang. Returns null if invalid. */
 export function parseBahtToSatang(input: string): number | null {
   const cleaned = input.replace(/[,\s฿]/g, "");
   if (!/^\d+(\.\d{1,2})?$/.test(cleaned)) return null;
   const satang = Math.round(parseFloat(cleaned) * 100);
-  if (!Number.isFinite(satang) || satang <= 0) return null;
+  if (!Number.isFinite(satang) || satang <= 0 || satang > MAX_SATANG) {
+    return null;
+  }
   return satang;
+}
+
+/** Like parseBahtToSatang but empty and zero are valid (they mean 0 satang). */
+export function parseOptionalBahtToSatang(input: string): number | null {
+  const cleaned = input.replace(/[,\s฿]/g, "");
+  if (cleaned === "") return 0;
+  if (!/^\d+(\.\d{1,2})?$/.test(cleaned)) return null;
+  const satang = Math.round(parseFloat(cleaned) * 100);
+  if (!Number.isFinite(satang) || satang > MAX_SATANG) return null;
+  return satang;
+}
+
+/** Satang → plain editable text for an <input>: "1234.50", "80". */
+export function satangToInputText(satang: number): string {
+  return satang % 100 === 0
+    ? String(satang / 100)
+    : (satang / 100).toFixed(2);
 }
 
 export function todayBangkok(): string {

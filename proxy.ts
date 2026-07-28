@@ -1,13 +1,16 @@
 import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@/lib/auth/server";
 
-const neonMiddleware = auth.middleware({
-  loginUrl: "/auth/sign-in",
-});
+// Constructed lazily: touching `auth` needs the auth env vars, which don't
+// exist at build time or in AUTH_DISABLED local runs.
+let neonMiddleware: ReturnType<typeof auth.middleware> | null = null;
 
 // AUTH_DISABLED=1 bypasses login for local UI testing only — never set on Vercel.
 export default async function proxy(request: NextRequest) {
   if (process.env.AUTH_DISABLED === "1") return NextResponse.next();
+  neonMiddleware ??= auth.middleware({
+    loginUrl: "/auth/sign-in",
+  });
   if (request.method === "GET" || request.method === "HEAD") {
     return neonMiddleware(request);
   }

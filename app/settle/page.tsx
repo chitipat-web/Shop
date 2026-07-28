@@ -24,7 +24,10 @@ export default async function SettlePage({
     persons.find((p) => p.id === id)?.name ?? `คนที่ ${id}`;
   const p1 = nameOf(1);
   const p2 = nameOf(2);
-  const share = Math.round(summary.total / 2);
+  const hasPersonal = summary.personal1 + summary.personal2 > 0;
+  const shared = summary.total - summary.personal1 - summary.personal2;
+  // Also split the display on an odd-satang total, where the halves differ.
+  const showShares = hasPersonal || summary.share1 !== summary.share2;
 
   return (
     <div>
@@ -98,12 +101,56 @@ export default async function SettlePage({
                     </span>
                   </td>
                 </tr>
+                {hasPersonal && (
+                  <>
+                    {summary.personal1 > 0 && (
+                      <tr>
+                        <td className="py-2.5 text-neutral-500">
+                          ของส่วนตัว {p1} (ไม่หาร)
+                        </td>
+                        <td className="py-2.5 text-right tabular-nums">
+                          ฿{satangToBahtText(summary.personal1)}
+                        </td>
+                      </tr>
+                    )}
+                    {summary.personal2 > 0 && (
+                      <tr>
+                        <td className="py-2.5 text-neutral-500">
+                          ของส่วนตัว {p2} (ไม่หาร)
+                        </td>
+                        <td className="py-2.5 text-right tabular-nums">
+                          ฿{satangToBahtText(summary.personal2)}
+                        </td>
+                      </tr>
+                    )}
+                    <tr>
+                      <td className="py-2.5 text-neutral-500">
+                        ของที่หารกันครึ่ง ๆ
+                      </td>
+                      <td className="py-2.5 text-right tabular-nums">
+                        ฿{satangToBahtText(shared)}
+                      </td>
+                    </tr>
+                  </>
+                )}
                 <tr>
-                  <td className="py-2.5 text-neutral-500">หารครึ่ง คนละ</td>
+                  <td className="py-2.5 text-neutral-500">
+                    {showShares ? `${p1} ต้องออกทั้งหมด` : "หารครึ่ง คนละ"}
+                  </td>
                   <td className="py-2.5 text-right font-semibold tabular-nums">
-                    ฿{satangToBahtText(share)}
+                    ฿{satangToBahtText(summary.share1)}
                   </td>
                 </tr>
+                {showShares && (
+                  <tr>
+                    <td className="py-2.5 text-neutral-500">
+                      {p2} ต้องออกทั้งหมด
+                    </td>
+                    <td className="py-2.5 text-right font-semibold tabular-nums">
+                      ฿{satangToBahtText(summary.share2)}
+                    </td>
+                  </tr>
+                )}
                 <tr>
                   <td className="py-2.5 text-neutral-500">{p1} จ่ายไปแล้ว</td>
                   <td className="py-2.5 text-right tabular-nums">

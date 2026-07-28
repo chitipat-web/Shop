@@ -1,8 +1,9 @@
 "use client";
 
+import Link from "next/link";
 import { useRef, useState } from "react";
 import type { Person, Store } from "@/lib/db";
-import { addPurchase } from "@/app/actions";
+import { addPurchase, updatePurchase } from "@/app/actions";
 import Avatar from "./Avatar";
 import { CameraIcon, PencilIcon, ReceiptIcon, XIcon } from "./icons";
 
@@ -25,25 +26,65 @@ async function compressImage(file: File): Promise<File> {
   }
 }
 
-export default function QuickAddForm({
+export type PurchaseFormInitial = {
+  id: number;
+  date: string;
+  storeId: number;
+  payerId: number;
+  amountText: string;
+  note: string;
+  personalP1Text: string;
+  personalP2Text: string;
+  receiptUrl: string | null;
+};
+
+// Compare in integer satang like the server does — float baht sums like
+// 0.1 + 0.2 would flag valid fully-personal bills as over the total.
+function toSatang(text: string): number {
+  const n = parseFloat(text.replace(/[,\s฿]/g, ""));
+  return Number.isFinite(n) ? Math.round(n * 100) : 0;
+}
+
+export default function PurchaseForm({
   stores,
   persons,
   today,
   currentPersonId,
+  initial,
 }: {
   stores: Store[];
   persons: Person[];
   today: string;
   currentPersonId: number;
+  initial?: PurchaseFormInitial;
 }) {
-  const [storeId, setStoreId] = useState(stores[0]?.id ?? 0);
+  const [storeId, setStoreId] = useState(initial?.storeId ?? stores[0]?.id ?? 0);
   // Default the payer to whoever is logged in — they can still tap the other.
-  const [payerId, setPayerId] = useState(currentPersonId);
-  const [showMore, setShowMore] = useState(false);
+  const [payerId, setPayerId] = useState(initial?.payerId ?? currentPersonId);
+  const [showMore, setShowMore] = useState(!!initial);
+  const [showPersonal, setShowPersonal] = useState(
+    !!initial &&
+      (toSatang(initial.personalP1Text) > 0 ||
+        toSatang(initial.personalP2Text) > 0)
+  );
+  const [amountText, setAmountText] = useState(initial?.amountText ?? "");
+  const [personalP1Text, setPersonalP1Text] = useState(
+    initial?.personalP1Text ?? ""
+  );
+  const [personalP2Text, setPersonalP2Text] = useState(
+    initial?.personalP2Text ?? ""
+  );
   const [preview, setPreview] = useState<string | null>(null);
+  const [removedExisting, setRemovedExisting] = useState(false);
   const fileRef = useRef<HTMLInputElement>(null);
 
   const selectedStore = stores.find((s) => s.id === storeId);
+  const existingReceipt =
+    initial?.receiptUrl && !removedExisting && !preview
+      ? initial.receiptUrl
+      : null;
+  const personalSum = toSatang(personalP1Text) + toSatang(personalP2Text);
+  const personalTooBig = personalSum > 0 && personalSum > toSatang(amountText);
 
   async function onPickReceipt(e: React.ChangeEvent<HTMLInputElement>) {
     const input = e.target;
@@ -66,7 +107,11 @@ export default function QuickAddForm({
   }
 
   return (
-    <form action={addPurchase} className="flex flex-col gap-5">
+    <form
+      action={initial ? updatePurchase : addPurchase}
+      className="flex flex-col gap-5"
+    >
+      {initial && <input type="hidden" name="id" value={initial.id} />}
       <input type="hidden" name="store_id" value={storeId} />
       <input type="hidden" name="payer_id" value={payerId} />
 
@@ -109,7 +154,7 @@ export default function QuickAddForm({
             );
           })}
         </div>
-        {selectedStore && !selectedStore.has_receipt && (
+        {selectedStore && !selectedStore.has_receipt && !initial && (
           <p className="mt-2.5 rounded-xl bg-amber-50 px-3.5 py-2 text-xs font-medium text-amber-700 ring-1 ring-amber-100">
             ร้านนี้ไม่มีบิล — จดตอนนี้เลยกันลืม ใส่โน้ตสั้น ๆ ก็ช่วยได้
           </p>
@@ -129,6 +174,8 @@ export default function QuickAddForm({
             placeholder="0"
             autoComplete="off"
             required
+            value={amountText}
+            onChange={(e) => setAmountText(e.target.value)}
             className="w-full bg-transparent px-2 py-4 text-center text-4xl font-bold tabular-nums tracking-tight outline-none placeholder:text-neutral-200"
           />
         </div>
@@ -167,6 +214,56 @@ export default function QuickAddForm({
         </div>
       </section>
 
+      {showPersonal ? (
+        <section className="flex flex-col gap-3 rounded-2xl bg-white p-4 shadow-sm ring-1 ring-black/5">
+          <div>
+            <h2 className="text-sm font-semibold text-neutral-700">
+              ของส่วนตัวในบิลนี้ (ไม่หาร)
+            </h2>
+            <p className="mt-0.5 text-xs text-neutral-400">
+              ส่วนนี้คิดเต็มให้เจ้าของ ที่เหลือของบิลถึงเอามาหารครึ่ง
+            </p>
+          </div>
+          {persons.map((person) => (
+            <label
+              key={person.id}
+              className="flex items-center gap-2 text-sm font-medium text-neutral-500"
+            >
+              <Avatar name={person.name} personId={person.id} size="h-6 w-6 text-[10px]" />
+              <span className="w-24 truncate">{person.name}</span>
+              <input
+                name={`personal_p${person.id}`}
+                type="text"
+                inputMode="decimal"
+                placeholder="0"
+                autoComplete="off"
+                value={person.id === 1 ? personalP1Text : personalP2Text}
+                onChange={(e) =>
+                  person.id === 1
+                    ? setPersonalP1Text(e.target.value)
+                    : setPersonalP2Text(e.target.value)
+                }
+                className="min-w-0 flex-1 rounded-xl border border-neutral-200 bg-white px-3 py-2 text-right text-base font-semibold tabular-nums text-neutral-800 outline-none placeholder:text-neutral-300 focus:border-teal-500 focus:ring-1 focus:ring-teal-500"
+              />
+              <span className="text-neutral-400">บาท</span>
+            </label>
+          ))}
+          {personalTooBig && (
+            <p className="rounded-xl bg-red-50 px-3 py-2 text-xs font-medium text-red-700">
+              ยอดของส่วนตัวรวมกันเกินยอดทั้งบิล
+            </p>
+          )}
+        </section>
+      ) : (
+        <button
+          type="button"
+          onClick={() => setShowPersonal(true)}
+          className="self-start text-sm font-medium text-teal-700"
+        >
+          + มีของส่วนตัวไม่หารในบิลนี้
+        </button>
+      )}
+
       <section>
         <input
           ref={fileRef}
@@ -176,21 +273,38 @@ export default function QuickAddForm({
           onChange={onPickReceipt}
           className="hidden"
         />
-        {preview ? (
+        {initial && removedExisting && !preview && (
+          <input type="hidden" name="remove_receipt" value="on" />
+        )}
+        {preview || existingReceipt ? (
           <div className="flex items-center gap-3 rounded-2xl bg-white p-3 shadow-sm ring-1 ring-black/5">
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img
-              src={preview}
+              src={preview ?? existingReceipt ?? undefined}
               alt="สลิปที่แนบ"
               className="h-14 w-14 rounded-xl object-cover"
             />
             <span className="flex-1 text-sm font-medium text-neutral-600">
-              แนบสลิปแล้ว ✓
+              {preview ? "แนบสลิปแล้ว ✓" : "สลิปที่แนบไว้"}
             </span>
+            {existingReceipt && (
+              <button
+                type="button"
+                onClick={() => fileRef.current?.click()}
+                className="rounded-lg bg-neutral-100 px-2.5 py-1.5 text-xs font-semibold text-neutral-600 active:bg-neutral-200"
+              >
+                เปลี่ยนรูป
+              </button>
+            )}
             <button
               type="button"
-              onClick={clearReceipt}
-              aria-label="ลบรูปที่แนบ"
+              onClick={() => {
+                // X on a fresh pick only cancels the pick (the stored photo
+                // comes back); X on the stored photo marks it for removal.
+                if (preview) clearReceipt();
+                else setRemovedExisting(true);
+              }}
+              aria-label={preview ? "ยกเลิกรูปใหม่" : "ลบรูปที่แนบ"}
               className="rounded-lg p-2 text-neutral-400 active:bg-red-50 active:text-red-600"
             >
               <XIcon className="h-4 w-4" />
@@ -215,7 +329,7 @@ export default function QuickAddForm({
             <input
               name="date"
               type="date"
-              defaultValue={today}
+              defaultValue={initial?.date ?? today}
               className="mt-1 w-full rounded-xl border border-neutral-200 bg-white px-3 py-2.5 text-base font-normal text-neutral-800 outline-none focus:border-teal-500 focus:ring-1 focus:ring-teal-500"
             />
           </label>
@@ -225,6 +339,7 @@ export default function QuickAddForm({
               name="note"
               type="text"
               placeholder="ซื้ออะไรมาบ้าง"
+              defaultValue={initial?.note ?? ""}
               className="mt-1 w-full rounded-xl border border-neutral-200 bg-white px-3 py-2.5 text-base font-normal text-neutral-800 outline-none placeholder:text-neutral-300 focus:border-teal-500 focus:ring-1 focus:ring-teal-500"
             />
           </label>
@@ -244,10 +359,19 @@ export default function QuickAddForm({
 
       <button
         type="submit"
-        className="rounded-2xl bg-gradient-to-r from-teal-600 to-emerald-600 py-4 text-lg font-bold text-white shadow-lg shadow-teal-600/30 transition active:scale-[0.98]"
+        disabled={personalTooBig}
+        className="rounded-2xl bg-gradient-to-r from-teal-600 to-emerald-600 py-4 text-lg font-bold text-white shadow-lg shadow-teal-600/30 transition active:scale-[0.98] disabled:opacity-40"
       >
-        บันทึก
+        {initial ? "บันทึกการแก้ไข" : "บันทึก"}
       </button>
+      {initial && (
+        <Link
+          href="/list"
+          className="-mt-2 rounded-2xl bg-white py-3 text-center text-sm font-semibold text-neutral-500 shadow-sm ring-1 ring-black/5"
+        >
+          ยกเลิก
+        </Link>
+      )}
     </form>
   );
 }

@@ -2,7 +2,7 @@ import Link from "next/link";
 import { getDb } from "@/lib/db";
 import { requireUser } from "@/lib/auth/access";
 import { satangToBahtText, todayBangkok } from "@/lib/format";
-import QuickAddForm from "@/components/QuickAddForm";
+import PurchaseForm from "@/components/PurchaseForm";
 
 export const dynamic = "force-dynamic";
 
@@ -31,7 +31,9 @@ export default async function QuickAddPage({
       )}
       {error && (
         <p className="mb-4 rounded-xl bg-red-50 px-3.5 py-2.5 text-sm font-medium text-red-700">
-          กรอกไม่ครบหรือยอดเงินไม่ถูกต้อง ลองใหม่อีกครั้งครับ
+          {error === "personal"
+            ? "ยอดของส่วนตัวรวมกันเกินยอดทั้งบิล ลองใหม่อีกครั้งครับ"
+            : "กรอกไม่ครบหรือยอดเงินไม่ถูกต้อง ลองใหม่อีกครั้งครับ"}
         </p>
       )}
 
@@ -55,7 +57,7 @@ export default async function QuickAddPage({
       )}
 
       <h1 className="mb-4 text-xl font-bold">บันทึกของที่ซื้อ</h1>
-      <QuickAddForm
+      <PurchaseForm
         stores={stores}
         persons={persons}
         today={todayBangkok()}
