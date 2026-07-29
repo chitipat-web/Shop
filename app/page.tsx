@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { getDb } from "@/lib/db";
 import { requireUser } from "@/lib/auth/access";
-import { satangToBahtText, todayBangkok } from "@/lib/format";
+import { satangToBahtText, todayLocal } from "@/lib/format";
 import PurchaseForm from "@/components/PurchaseForm";
 
 export const dynamic = "force-dynamic";
@@ -43,13 +43,13 @@ export default async function QuickAddPage({
           className="mb-5 flex items-center justify-between rounded-2xl bg-white px-4 py-3 shadow-sm ring-1 ring-black/5"
         >
           <span className="text-sm text-neutral-500">
-            รอบนี้ ฿{satangToBahtText(summary.total)} ·{" "}
+            รอบนี้ ₪{satangToBahtText(summary.total)} ·{" "}
             <span className="font-semibold text-neutral-700">
               {summary.net1 === 0
                 ? "ยอดเท่ากันพอดี"
                 : summary.net1 > 0
-                  ? `${p2.name} ติด ${p1.name} ฿${satangToBahtText(summary.net1)}`
-                  : `${p1.name} ติด ${p2.name} ฿${satangToBahtText(-summary.net1)}`}
+                  ? `${p2.name} ติด ${p1.name} ₪${satangToBahtText(summary.net1)}`
+                  : `${p1.name} ติด ${p2.name} ₪${satangToBahtText(-summary.net1)}`}
             </span>
           </span>
           <span className="text-neutral-300">›</span>
@@ -60,7 +60,7 @@ export default async function QuickAddPage({
       <PurchaseForm
         stores={stores}
         persons={persons}
-        today={todayBangkok()}
+        today={todayLocal()}
         currentPersonId={personId}
       />
     </div>

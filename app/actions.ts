@@ -8,7 +8,7 @@ import { requireUser } from "@/lib/auth/access";
 import {
   parseBahtToSatang,
   parseOptionalBahtToSatang,
-  todayBangkok,
+  todayLocal,
 } from "@/lib/format";
 
 const MAX_RECEIPT_BYTES = 5 * 1024 * 1024;
@@ -60,7 +60,7 @@ function parsePurchaseForm(formData: FormData) {
     String(formData.get("personal_p2") ?? "")
   );
   const rawDate = String(formData.get("date") ?? "");
-  const date = /^\d{4}-\d{2}-\d{2}$/.test(rawDate) ? rawDate : todayBangkok();
+  const date = /^\d{4}-\d{2}-\d{2}$/.test(rawDate) ? rawDate : todayLocal();
   const note = String(formData.get("note") ?? "").trim().slice(0, 500);
 
   if (
@@ -167,7 +167,7 @@ export async function settleUp() {
   const user = await requireUser();
   if (!user.isAdmin) redirect("/settle");
   const db = await getDb();
-  await db.settleAll(todayBangkok().slice(0, 7), new Date().toISOString());
+  await db.settleAll(todayLocal().slice(0, 7), new Date().toISOString());
   revalidateAll();
   redirect("/settle?done=1");
 }

@@ -29,11 +29,21 @@ Auth flow checks (without AUTH_DISABLED): unauthenticated `GET /` →
 Install playwright in a scratch dir (not in this repo). Viewport
 390x844 (mobile-first UI). Flows worth driving:
 
+Currency is ₪ (shekel); "today" uses Asia/Jerusalem. Money columns are
+still named `*_satang` (unit = 1/100 ₪).
+
 1. `/` Quick Add: pick store button, fill `input[name="amount"]`,
    pick payer, submit → redirects to `/?added=1`. Optional personal
    (no-split) amounts behind "+ มีของส่วนตัวไม่หารในบิลนี้" →
    `input[name="personal_p1"]` / `personal_p2`; client disables submit
-   when their sum exceeds the amount.
+   when their sum exceeds the amount. Attaching a receipt photo triggers
+   on-device OCR (tesseract.js heb+eng, assets self-hosted in
+   `public/ocr` — restart `next start` after touching them: public/ is
+   snapshotted at boot). Status shows in `[data-testid="ocr-status"]`;
+   an empty amount field is autofilled from the bill's total (สה"כ /
+   לתשלום line, else max decimal amount). Test by drawing a receipt on
+   an in-page canvas and dispatching a change event on the file input;
+   first scan loads ~13MB of assets, allow 2-3 min.
 2. `/list`: summary card shows total, per-person paid, net line
    ("X ติด Y อยู่ ฿…"). Edit via `a[aria-label="แก้ไขรายการ"]` →
    `/edit/<id>` (prefilled form, submit → `/list?updated=1`).

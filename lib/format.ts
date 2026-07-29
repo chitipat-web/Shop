@@ -1,3 +1,6 @@
+// Money is stored in hundredths (the *_satang columns predate the currency
+// switch); the display currency is the Israeli new shekel, so a stored unit
+// is one agora (1/100 ₪).
 export function satangToBahtText(satang: number): string {
   const baht = satang / 100;
   return baht.toLocaleString("th-TH", {
@@ -6,12 +9,12 @@ export function satangToBahtText(satang: number): string {
   });
 }
 
-/** 20 ล้านบาท — comfortably inside the Postgres int4 columns. */
+/** 20 ล้านเชเขล — comfortably inside the Postgres int4 columns. */
 const MAX_SATANG = 2_000_000_000;
 
-/** Parse a baht string like "123", "1,234.50" into satang. Returns null if invalid. */
+/** Parse an amount string like "123", "1,234.50" into hundredths. Returns null if invalid. */
 export function parseBahtToSatang(input: string): number | null {
-  const cleaned = input.replace(/[,\s฿]/g, "");
+  const cleaned = input.replace(/[,\s฿₪]/g, "");
   if (!/^\d+(\.\d{1,2})?$/.test(cleaned)) return null;
   const satang = Math.round(parseFloat(cleaned) * 100);
   if (!Number.isFinite(satang) || satang <= 0 || satang > MAX_SATANG) {
@@ -20,9 +23,9 @@ export function parseBahtToSatang(input: string): number | null {
   return satang;
 }
 
-/** Like parseBahtToSatang but empty and zero are valid (they mean 0 satang). */
+/** Like parseBahtToSatang but empty and zero are valid (they mean 0). */
 export function parseOptionalBahtToSatang(input: string): number | null {
-  const cleaned = input.replace(/[,\s฿]/g, "");
+  const cleaned = input.replace(/[,\s฿₪]/g, "");
   if (cleaned === "") return 0;
   if (!/^\d+(\.\d{1,2})?$/.test(cleaned)) return null;
   const satang = Math.round(parseFloat(cleaned) * 100);
@@ -37,9 +40,10 @@ export function satangToInputText(satang: number): string {
     : (satang / 100).toFixed(2);
 }
 
-export function todayBangkok(): string {
-  // sv-SE locale formats as YYYY-MM-DD
-  return new Date().toLocaleDateString("sv-SE", { timeZone: "Asia/Bangkok" });
+export function todayLocal(): string {
+  // The couple lives in Israel — "today" must roll over on their midnight,
+  // not Bangkok's. sv-SE locale formats as YYYY-MM-DD.
+  return new Date().toLocaleDateString("sv-SE", { timeZone: "Asia/Jerusalem" });
 }
 
 export function relativeThaiDate(isoDate: string, today: string): string {

@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { getDb, type PurchaseRow } from "@/lib/db";
 import { requireUser } from "@/lib/auth/access";
-import { relativeThaiDate, satangToBahtText, todayBangkok } from "@/lib/format";
+import { relativeThaiDate, satangToBahtText, todayLocal } from "@/lib/format";
 import { deletePurchase } from "@/app/actions";
 import Avatar from "@/components/Avatar";
 import { BasketIcon, PencilIcon, ReceiptIcon, XIcon } from "@/components/icons";
@@ -23,7 +23,7 @@ export default async function ListPage({
   ]);
   const p1 = persons.find((p) => p.id === 1)!;
   const p2 = persons.find((p) => p.id === 2)!;
-  const today = todayBangkok();
+  const today = todayLocal();
 
   const byDate = new Map<string, PurchaseRow[]>();
   for (const purchase of purchases) {
@@ -49,16 +49,16 @@ export default async function ListPage({
           </p>
         </div>
         <p className="mt-0.5 text-4xl font-bold tabular-nums tracking-tight">
-          ฿{satangToBahtText(summary.total)}
+          ₪{satangToBahtText(summary.total)}
         </p>
         <div className="mt-3 flex justify-between text-xs text-teal-50/90">
           <span className="flex items-center gap-1.5">
             <Avatar name={p1.name} personId={1} size="h-5 w-5 text-[10px]" />
-            {p1.name} จ่ายไป ฿{satangToBahtText(summary.paid1)}
+            {p1.name} จ่ายไป ₪{satangToBahtText(summary.paid1)}
           </span>
           <span className="flex items-center gap-1.5">
             <Avatar name={p2.name} personId={2} size="h-5 w-5 text-[10px]" />
-            {p2.name} จ่ายไป ฿{satangToBahtText(summary.paid2)}
+            {p2.name} จ่ายไป ₪{satangToBahtText(summary.paid2)}
           </span>
         </div>
         {summary.count > 0 && (
@@ -69,8 +69,8 @@ export default async function ListPage({
             {summary.net1 === 0
               ? "ตอนนี้ยอดเท่ากันพอดี ไม่มีใครติดใคร 🎉"
               : summary.net1 > 0
-                ? `ตอนนี้ ${p2.name} ติด ${p1.name} อยู่ ฿${satangToBahtText(summary.net1)}`
-                : `ตอนนี้ ${p1.name} ติด ${p2.name} อยู่ ฿${satangToBahtText(-summary.net1)}`}
+                ? `ตอนนี้ ${p2.name} ติด ${p1.name} อยู่ ₪${satangToBahtText(summary.net1)}`
+                : `ตอนนี้ ${p1.name} ติด ${p2.name} อยู่ ₪${satangToBahtText(-summary.net1)}`}
           </p>
         )}
       </div>
@@ -133,7 +133,7 @@ export default async function ListPage({
                       </span>
                       {item.personal_p1_satang + item.personal_p2_satang > 0 && (
                         <span className="whitespace-nowrap rounded-md bg-violet-50 px-1.5 py-0.5 font-medium text-violet-600">
-                          ส่วนตัว ฿
+                          ส่วนตัว ₪
                           {satangToBahtText(
                             item.personal_p1_satang + item.personal_p2_satang
                           )}
@@ -145,7 +145,7 @@ export default async function ListPage({
                     </p>
                   </div>
                   <span className="text-lg font-bold tabular-nums tracking-tight">
-                    ฿{satangToBahtText(item.amount_satang)}
+                    ₪{satangToBahtText(item.amount_satang)}
                   </span>
                   {(user.isAdmin || item.payer_id === user.personId) && (
                     <span className="flex items-center">

@@ -83,7 +83,7 @@ export default async function SettlePage({
                   </span>
                 </div>
                 <p className="mt-2 text-3xl font-bold tabular-nums leading-snug">
-                  ฿{satangToBahtText(Math.abs(summary.net1))}
+                  ₪{satangToBahtText(Math.abs(summary.net1))}
                 </p>
               </>
             )}
@@ -95,7 +95,7 @@ export default async function SettlePage({
                 <tr>
                   <td className="py-2.5 text-neutral-500">รวมที่ซื้อด้วยกัน</td>
                   <td className="py-2.5 text-right font-semibold tabular-nums">
-                    ฿{satangToBahtText(summary.total)}
+                    ₪{satangToBahtText(summary.total)}
                     <span className="ml-1 font-normal text-neutral-400">
                       ({summary.count} รายการ)
                     </span>
@@ -109,7 +109,7 @@ export default async function SettlePage({
                           ของส่วนตัว {p1} (ไม่หาร)
                         </td>
                         <td className="py-2.5 text-right tabular-nums">
-                          ฿{satangToBahtText(summary.personal1)}
+                          ₪{satangToBahtText(summary.personal1)}
                         </td>
                       </tr>
                     )}
@@ -119,7 +119,7 @@ export default async function SettlePage({
                           ของส่วนตัว {p2} (ไม่หาร)
                         </td>
                         <td className="py-2.5 text-right tabular-nums">
-                          ฿{satangToBahtText(summary.personal2)}
+                          ₪{satangToBahtText(summary.personal2)}
                         </td>
                       </tr>
                     )}
@@ -128,7 +128,7 @@ export default async function SettlePage({
                         ของที่หารกันครึ่ง ๆ
                       </td>
                       <td className="py-2.5 text-right tabular-nums">
-                        ฿{satangToBahtText(shared)}
+                        ₪{satangToBahtText(shared)}
                       </td>
                     </tr>
                   </>
@@ -138,7 +138,7 @@ export default async function SettlePage({
                     {showShares ? `${p1} ต้องออกทั้งหมด` : "หารครึ่ง คนละ"}
                   </td>
                   <td className="py-2.5 text-right font-semibold tabular-nums">
-                    ฿{satangToBahtText(summary.share1)}
+                    ₪{satangToBahtText(summary.share1)}
                   </td>
                 </tr>
                 {showShares && (
@@ -147,20 +147,20 @@ export default async function SettlePage({
                       {p2} ต้องออกทั้งหมด
                     </td>
                     <td className="py-2.5 text-right font-semibold tabular-nums">
-                      ฿{satangToBahtText(summary.share2)}
+                      ₪{satangToBahtText(summary.share2)}
                     </td>
                   </tr>
                 )}
                 <tr>
                   <td className="py-2.5 text-neutral-500">{p1} จ่ายไปแล้ว</td>
                   <td className="py-2.5 text-right tabular-nums">
-                    ฿{satangToBahtText(summary.paid1)}
+                    ₪{satangToBahtText(summary.paid1)}
                   </td>
                 </tr>
                 <tr>
                   <td className="py-2.5 text-neutral-500">{p2} จ่ายไปแล้ว</td>
                   <td className="py-2.5 text-right tabular-nums">
-                    ฿{satangToBahtText(summary.paid2)}
+                    ₪{satangToBahtText(summary.paid2)}
                   </td>
                 </tr>
               </tbody>
@@ -210,11 +210,11 @@ export default async function SettlePage({
                   <p className="mt-0.5 text-xs text-neutral-500">
                     {s.amount_satang === 0
                       ? "ยอดเท่ากัน ไม่มีการโอน"
-                      : `${nameOf(s.from_person)} โอนให้ ${nameOf(s.to_person)} ฿${satangToBahtText(s.amount_satang)}`}
+                      : `${nameOf(s.from_person)} โอนให้ ${nameOf(s.to_person)} ₪${satangToBahtText(s.amount_satang)}`}
                   </p>
                 </div>
                 <span className="text-sm font-semibold text-neutral-400">
-                  ฿{satangToBahtText(s.total_satang)}
+                  ₪{satangToBahtText(s.total_satang)}
                 </span>
               </li>
             ))}

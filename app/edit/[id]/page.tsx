@@ -1,7 +1,7 @@
 import { redirect } from "next/navigation";
 import { getDb } from "@/lib/db";
 import { requireUser } from "@/lib/auth/access";
-import { satangToInputText, todayBangkok } from "@/lib/format";
+import { satangToInputText, todayLocal } from "@/lib/format";
 import PurchaseForm from "@/components/PurchaseForm";
 
 export const dynamic = "force-dynamic";
@@ -44,7 +44,7 @@ export default async function EditPurchasePage({
       <PurchaseForm
         stores={stores}
         persons={persons}
-        today={todayBangkok()}
+        today={todayLocal()}
         currentPersonId={user.personId}
         initial={{
           id: purchase.id,
