@@ -27,7 +27,9 @@ export default async function proxy(request: NextRequest) {
 
 export const config = {
   matcher: [
-    // Protect everything except auth routes and static assets.
-    "/((?!api/auth|auth|_next/static|_next/image|manifest\\.json|icon\\.svg|favicon\\.ico).*)",
+    // Protect everything except auth routes and static assets (incl. the
+    // self-hosted OCR worker/wasm/traineddata — the OCR web worker fetches
+    // them and must not be bounced to the login page).
+    "/((?!api/auth|auth|ocr/|_next/static|_next/image|manifest\\.json|icon\\.svg|favicon\\.ico).*)",
   ],
 };
