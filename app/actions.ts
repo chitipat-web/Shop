@@ -3,7 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { del, put } from "@vercel/blob";
-import { getDb } from "@/lib/db";
+import { getDb, type AuditSnapshot, type PurchaseRow } from "@/lib/db";
 import { requireUser } from "@/lib/auth/access";
 import {
   parseBahtToSatang,
@@ -39,6 +39,19 @@ async function deleteReceiptBlob(url: string | null) {
   } catch {
     // A stale blob is harmless; never fail the user action over cleanup.
   }
+}
+
+function toSnapshot(row: PurchaseRow): AuditSnapshot {
+  return {
+    date: row.date,
+    store_id: row.store_id,
+    payer_id: row.payer_id,
+    amount_satang: row.amount_satang,
+    personal_p1_satang: row.personal_p1_satang,
+    personal_p2_satang: row.personal_p2_satang,
+    note: row.note,
+    receipt_url: row.receipt_url,
+  };
 }
 
 function revalidateAll() {
@@ -132,6 +145,26 @@ export async function updatePurchase(formData: FormData) {
     receiptUrl,
     user.isAdmin ? undefined : user.personId
   );
+  if (updated) {
+    const after: AuditSnapshot = {
+      date: parsed.input.date,
+      store_id: parsed.input.storeId,
+      payer_id: parsed.input.payerId,
+      amount_satang: parsed.input.amountSatang,
+      personal_p1_satang: parsed.input.personalP1Satang,
+      personal_p2_satang: parsed.input.personalP2Satang,
+      note: parsed.input.note,
+      receipt_url: receiptUrl === undefined ? current.receipt_url : receiptUrl,
+    };
+    await db.insertAudit(
+      new Date().toISOString(),
+      user.personId,
+      "update",
+      id,
+      JSON.stringify(toSnapshot(current)),
+      JSON.stringify(after)
+    );
+  }
   if (updated && receiptUrl !== undefined && current.receipt_url !== receiptUrl) {
     // The old photo is no longer referenced by anything.
     await deleteReceiptBlob(current.receipt_url);
@@ -159,7 +192,17 @@ export async function deletePurchase(formData: FormData) {
     id,
     user.isAdmin ? undefined : user.personId
   );
-  if (deleted) await deleteReceiptBlob(current.receipt_url);
+  if (deleted) {
+    await db.insertAudit(
+      new Date().toISOString(),
+      user.personId,
+      "delete",
+      id,
+      JSON.stringify(toSnapshot(current)),
+      null
+    );
+    await deleteReceiptBlob(current.receipt_url);
+  }
   revalidateAll();
 }
 

@@ -53,7 +53,10 @@ still named `*_satang` (unit = 1/100 ₪).
    to |paid1 − paid2| / 2. Click "เคลียร์แล้ว" → `/settle?done=1`,
    list becomes empty, history appears.
 4. `/settings`: rename persons/stores, toggle มีบิล, add store,
-   CSV download link at `/export` (BOM + Thai headers).
+   CSV download link at `/export` (BOM + Thai headers). Admin also sees
+   "ประวัติการแก้ไข / ลบ" — an audit log written by every purchase
+   update/delete (actor, per-field old → new diffs, Israel-time stamp);
+   hidden from non-admins.
 5. Roles: `AUTH_DEV_PERSON=2` runs as the non-admin — no settle
    button, no store management, can only edit/delete own rows.
 

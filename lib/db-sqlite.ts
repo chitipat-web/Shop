@@ -2,6 +2,7 @@ import Database from "better-sqlite3";
 import fs from "fs";
 import path from "path";
 import {
+  type AuditRow,
   type Db,
   type ExportRow,
   type Person,
@@ -54,6 +55,15 @@ export function createSqliteDb(): Db {
       note TEXT,
       receipt_url TEXT,
       settlement_id INTEGER REFERENCES settlements(id)
+    );
+    CREATE TABLE IF NOT EXISTS audit_log (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      at TEXT NOT NULL,
+      actor_id INTEGER NOT NULL REFERENCES persons(id),
+      action TEXT NOT NULL,
+      purchase_id INTEGER NOT NULL,
+      before_json TEXT NOT NULL,
+      after_json TEXT
     );
   `);
 
@@ -285,6 +295,22 @@ export function createSqliteDb(): Db {
         ).run(result.lastInsertRowid, ...rows.map((r) => r.id));
       });
       settle();
+    },
+    async insertAudit(at, actorId, action, purchaseId, beforeJson, afterJson) {
+      db.prepare(
+        `INSERT INTO audit_log (at, actor_id, action, purchase_id, before_json, after_json)
+         VALUES (?, ?, ?, ?, ?, ?)`
+      ).run(at, actorId, action, purchaseId, beforeJson, afterJson);
+    },
+    async getAuditLog(limit) {
+      return db
+        .prepare(
+          `SELECT a.*, per.name AS actor_name
+           FROM audit_log a
+           JOIN persons per ON per.id = a.actor_id
+           ORDER BY a.id DESC LIMIT ?`
+        )
+        .all(limit) as AuditRow[];
     },
     async updatePersonName(id, name) {
       db.prepare("UPDATE persons SET name = ? WHERE id = ?").run(name, id);

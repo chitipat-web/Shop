@@ -43,6 +43,27 @@ export type PurchaseInput = {
   personalP2Satang: number;
   note: string | null;
 };
+/** What a purchase looked like at audit time (column-name keys, JSON-stored). */
+export type AuditSnapshot = {
+  date: string;
+  store_id: number;
+  payer_id: number;
+  amount_satang: number;
+  personal_p1_satang: number;
+  personal_p2_satang: number;
+  note: string | null;
+  receipt_url: string | null;
+};
+export type AuditRow = {
+  id: number;
+  at: string; // ISO timestamp (UTC)
+  actor_id: number;
+  actor_name: string;
+  action: "update" | "delete";
+  purchase_id: number;
+  before_json: string;
+  after_json: string | null; // null for deletes
+};
 export type Summary = {
   total: number;
   paid1: number;
@@ -87,6 +108,15 @@ export interface Db {
   ): Promise<boolean>;
   /** Settle every unsettled purchase; no-op when there are none. */
   settleAll(label: string, settledAt: string): Promise<void>;
+  insertAudit(
+    at: string,
+    actorId: number,
+    action: "update" | "delete",
+    purchaseId: number,
+    beforeJson: string,
+    afterJson: string | null
+  ): Promise<void>;
+  getAuditLog(limit: number): Promise<AuditRow[]>;
   updatePersonName(id: number, name: string): Promise<void>;
   updateStore(id: number, name: string, hasReceipt: number): Promise<void>;
   insertStore(name: string, hasReceipt: number): Promise<void>;

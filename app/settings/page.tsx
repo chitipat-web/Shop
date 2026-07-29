@@ -2,6 +2,7 @@ import { getDb } from "@/lib/db";
 import { requireUser } from "@/lib/auth/access";
 import { addStore, updatePersonNames, updateStore } from "@/app/actions";
 import { signOut } from "@/app/auth/actions";
+import AuditLog from "@/components/AuditLog";
 
 export const dynamic = "force-dynamic";
 
@@ -13,9 +14,10 @@ export default async function SettingsPage({
   const { saved } = await searchParams;
   const user = await requireUser();
   const db = await getDb();
-  const [persons, stores] = await Promise.all([
+  const [persons, stores, auditRows] = await Promise.all([
     db.getPersons(),
     db.getStores(),
+    user.isAdmin ? db.getAuditLog(50) : Promise.resolve([]),
   ]);
 
   const inputCls =
@@ -121,6 +123,17 @@ export default async function SettingsPage({
         </form>
       </section>
       </>
+      )}
+
+      {user.isAdmin && auditRows.length > 0 && (
+        <section className="mt-5 rounded-2xl bg-white p-4 shadow-sm ring-1 ring-black/5">
+          <h2 className="font-semibold">ประวัติการแก้ไข / ลบ</h2>
+          <p className="mb-1 text-xs text-neutral-400">
+            บันทึกอัตโนมัติทุกครั้งที่มีการแก้หรือลบรายการ (ล่าสุด 50 ครั้ง
+            เห็นเฉพาะแอดมิน)
+          </p>
+          <AuditLog rows={auditRows} stores={stores} persons={persons} />
+        </section>
       )}
 
       <section className="mt-5 rounded-2xl bg-white p-4 shadow-sm ring-1 ring-black/5">

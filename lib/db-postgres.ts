@@ -1,5 +1,6 @@
 import { neon } from "@neondatabase/serverless";
 import {
+  type AuditRow,
   type Db,
   type ExportRow,
   type Person,
@@ -49,6 +50,16 @@ export async function createPostgresDb(): Promise<Db> {
       note TEXT,
       receipt_url TEXT,
       settlement_id INTEGER REFERENCES settlements(id)
+    )`;
+  await sql`
+    CREATE TABLE IF NOT EXISTS audit_log (
+      id SERIAL PRIMARY KEY,
+      at TEXT NOT NULL,
+      actor_id INTEGER NOT NULL REFERENCES persons(id),
+      action TEXT NOT NULL,
+      purchase_id INTEGER NOT NULL,
+      before_json TEXT NOT NULL,
+      after_json TEXT
     )`;
   // Migrations for databases created by earlier versions of the app.
   await sql`ALTER TABLE purchases ADD COLUMN IF NOT EXISTS receipt_url TEXT`;
@@ -202,6 +213,18 @@ export async function createPostgresDb(): Promise<Db> {
         WHERE settlement_id IS NULL
           AND id IN (SELECT id FROM counted)
           AND EXISTS (SELECT 1 FROM ins)`;
+    },
+    async insertAudit(at, actorId, action, purchaseId, beforeJson, afterJson) {
+      await sql`
+        INSERT INTO audit_log (at, actor_id, action, purchase_id, before_json, after_json)
+        VALUES (${at}, ${actorId}, ${action}, ${purchaseId}, ${beforeJson}, ${afterJson})`;
+    },
+    async getAuditLog(limit) {
+      return (await sql`
+        SELECT a.*, per.name AS actor_name
+        FROM audit_log a
+        JOIN persons per ON per.id = a.actor_id
+        ORDER BY a.id DESC LIMIT ${limit}`) as AuditRow[];
     },
     async updatePersonName(id, name) {
       await sql`UPDATE persons SET name = ${name} WHERE id = ${id}`;

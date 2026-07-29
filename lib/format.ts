@@ -46,6 +46,18 @@ export function todayLocal(): string {
   return new Date().toLocaleDateString("sv-SE", { timeZone: "Asia/Jerusalem" });
 }
 
+/** ISO timestamp → "29 ก.ค. 2569 21:05" in Israel local time. */
+export function israelDateTimeText(iso: string): string {
+  const d = new Date(iso);
+  const date = d.toLocaleDateString("sv-SE", { timeZone: "Asia/Jerusalem" });
+  const time = d.toLocaleTimeString("th-TH", {
+    timeZone: "Asia/Jerusalem",
+    hour: "2-digit",
+    minute: "2-digit",
+  });
+  return `${thaiDate(date)} ${time}`;
+}
+
 export function relativeThaiDate(isoDate: string, today: string): string {
   if (isoDate === today) return "วันนี้";
   const d = new Date(isoDate + "T00:00:00Z");
